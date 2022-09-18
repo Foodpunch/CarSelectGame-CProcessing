@@ -32,6 +32,16 @@ typedef struct Button
 	//also imagine a world where buttons can be circles too and you can just check for button..
 } Button;
 
+//===============|| VECTOR DEFINES || =================================
+
+//VECTOR UP: (0,-1)
+#define VECTOR_UP CP_Vector_Set(0,-1)
+//VECTOR DOWN: (0,1)
+#define VECTOR_DOWN CP_Vector_Set(0,1)
+//VECTOR RIGHT: (1,0)
+#define VECTOR_RIGHT CP_Vector_Set(1,0)
+//VECTOR LEFT: (-1,0)
+#define VECTOR_LEFT CP_Vector_Set(-1,0)
 
 
 //===============|| RECT AREA FUNCTIONS || =============================
@@ -77,12 +87,20 @@ CP_Vector GetMousePosition();
 //Checks if an area specified has been clicked.
 _Bool MouseInRectArea(RectArea rect, CP_POSITION_MODE mode);
 //int IsAreaClicked(float area_center_x, float area_center_y, float area_width, float area_height, float click_x, float click_y);
+
+//Returns the absolute value of a float
 float fAbs(float f);
+//Returns the squared distance between two vectors
 float Vector_Distance_Squared(CP_Vector a, CP_Vector b);
+//[DEPRECATED] Returns a point in the circumference of a circle. 
+//Note: 0 degrees is center of circle + radius. Increasing the angle returns a point in the clockwise direction.
 CP_Vector PointInCircle(CircleArea circle, float angleInDeg);
+//Returns the angle to vector. [NOT IMPLEMENTED YET]
 union CP_Vector AngleToVector(float radian_angle);
+//Draws a triangle with the 3 points specified. The triangle is then rotated by the degrees specified.
 void DrawTriangleAdvanced(CP_Vector a, CP_Vector b, CP_Vector c, float deg);
-
+//Rotates a given vector by angleInDeg. Rotation is applied in the clockwise direction.
 CP_Vector RotateVectorByAngle(CP_Vector vector, float angleInDeg);
-
+//Returns a point in the circumference of a circle. 
+//Note: 0 degrees is center of circle + radius. Increasing the angle returns a point in the clockwise direction.
 CP_Vector GetPointInCircle(CircleArea circle, float angleInDeg);

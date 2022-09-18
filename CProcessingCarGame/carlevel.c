@@ -6,19 +6,32 @@
 
 Car CarA;
 Car CarB;
+Car CarC;
 float gameTime;
+
+
+Car* selectedCar;
+
 void Car_Level_Init()
 {
 	CP_System_SetWindowSize(1000, 1000);
-	CarA = CreateCar(CreateCircleArea(250, 150, 50, LIGHT_PURPLE),10);
-	CarB = CreateCar(CreateCircleArea(250, 250, 50, LIGHT_ORANGE), 10);
+	CarA = CreateCar(250, 150, 50, LIGHT_PURPLE,10);
+	CarB = CreateCar(250, 250, 50, LIGHT_ORANGE, 10);
+	CarC = CreateCar(250, 350, 50, LIGHT_PINK, 10);
+
+	selectedCar = &CarA;
 }
 
 void Car_Level_Update()
 {
-	gameTime += CP_System_GetDt();
-	//DisplayCircle(CarA);
 	UpdateCar(&CarA);
+	UpdateCar(&CarB);
+	UpdateCar(&CarC);
+
+	MoveCar(selectedCar);
+	
+	CP_Graphics_ClearBackground(LIGHT_GRAY);
+	
 }
 
 void Car_Level_Exit()
@@ -26,26 +39,42 @@ void Car_Level_Exit()
 
 }
 
-
-Car CreateCar(CircleArea circle, float _moveSpeed)
+Car CreateCar(float x, float y, float diameter, CP_Color color, float speed)
 {
+	CircleArea _circle = CreateCircleArea(x, y, diameter, color);
 	Car newCar;
-	newCar.circleData = circle;
-	newCar.moveSpeed = _moveSpeed;
-	newCar.direction = CP_Vector_Set(0, -1);
+	newCar.circleData = _circle;
+	newCar.moveSpeed = speed;
+	newCar.direction = VECTOR_UP;
 	newCar.angleInDeg = 0.f;
 	return newCar;
 }
 
-void DisplayCar(Car _car)
+
+
+void DisplayCar(Car *_car)
 {
-	DisplayCircle(_car.circleData);
-	DrawTriangleAdvanced(GetPointInCircle(_car.circleData, 30), GetPointInCircle(_car.circleData, 150), GetPointInCircle(_car.circleData, 270), _car.angleInDeg);
-	CP_Graphics_ClearBackground(LIGHT_GRAY);
+	DisplayCircle(_car->circleData);
+	DrawTriangleAdvanced(GetPointInCircle(_car->circleData, 50), GetPointInCircle(_car->circleData, 130), GetPointInCircle(_car->circleData, 270), _car->angleInDeg);
 }
 
+
+//Updates the car display and also checks if the car has been clicked. 
 void UpdateCar(Car *car)
 {
+	//Feels messy but it's late and I'm tired with dealing with pointers
+	if (IsCircleClicked(car->circleData))
+	{
+		selectedCar = car;
+	}
+	DisplayCar(car);
+}
+
+//Moves the specified car with WASD movement keys. Arrow key implementation not added 
+void MoveCar(Car *car)
+{
+	//Note: The fancy pointer stuff here is because structs are NOT the same as classes. You need to use pointers if you
+	//wanna modify the values, if not you're just copying and applying changes to the copy.
 	if (CP_Input_KeyDown(KEY_W))
 	{
 		car->circleData.x += (car->direction.x * car->moveSpeed);
@@ -64,6 +93,5 @@ void UpdateCar(Car *car)
 	{
 		car->angleInDeg -= 10.f;
 	}
-	car->direction = RotateVectorByAngle(CP_Vector_Set(0, -1), car->angleInDeg);
-	DisplayCar(*car);
+	car->direction = RotateVectorByAngle(VECTOR_UP, car->angleInDeg);
 }

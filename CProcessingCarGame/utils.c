@@ -186,6 +186,8 @@ RectArea CreateRectAreaWithColor(float _x, float _y, float _sizeX, float _sizeY,
 
 //which apparently you can't overload functions :c
 
+
+//Creates a circle area with specified position, diameter and color
 CircleArea CreateCircleArea(float _x, float _y, float _diameter, CP_Color _color)
 {
 	CircleArea newCircle;
@@ -196,13 +198,15 @@ CircleArea CreateCircleArea(float _x, float _y, float _diameter, CP_Color _color
 	return newCircle;
 }
 
+//Displays the circle with the given circle area data.
 void DisplayCircle(CircleArea _circle)
 {
 	CP_Settings_Fill(_circle.color);
 	CP_Graphics_DrawCircle(_circle.x, _circle.y, _circle.diameter);
 }
 
-
+//Checks if the mouse is within the circle area specied
+//Note: this uses distance squared.
 _Bool IsMouseInCircleArea(CircleArea circleArea)
 {
 	CP_Vector CirclePos = CP_Vector_Set(circleArea.x, circleArea.y);
@@ -212,12 +216,14 @@ _Bool IsMouseInCircleArea(CircleArea circleArea)
 	return (distMouseCircle <= circleRadiusSquared) ? TRUE:FALSE;
 }
 
+//Returns the distance squared between 2 vectors (value is abs)
 float Vector_Distance_Squared(CP_Vector a, CP_Vector b)
 {
 	float distSquared = (CP_Math_Square((b.x - a.x)) + CP_Math_Square((b.y - a.y)));
 	return fAbs(distSquared);
 }
 
+//Checks if the mouse left click down on circle area specified
 _Bool IsCircleClicked(CircleArea _circle)
 {
 	if (CP_Input_MouseDown(MOUSE_BUTTON_LEFT) && IsMouseInCircleArea(_circle))
@@ -227,6 +233,8 @@ _Bool IsCircleClicked(CircleArea _circle)
 	else return FALSE;
 }
 
+
+
 CP_Vector AngleToVector(float radian_angle)
 {
     // TODO 
@@ -234,6 +242,7 @@ CP_Vector AngleToVector(float radian_angle)
     return ret;
 }
 
+//Function that returns absolute float values
 float fAbs(float f)
 {
 	if (f < 0)
@@ -243,9 +252,11 @@ float fAbs(float f)
 	else return f;
 }
 
+//Returns a point in a circle area at angleInDeg away from VECTOR_RIGHT of the circle.
+//Note: this function is not used anymore, it's outdated
 CP_Vector PointInCircle(CircleArea circle, float angleInDeg)
 {	//Assuming (1,0) in the circle is 0deg, rotates clockwise (note, origin is top left so it is clockwise)
-	CP_Vector startV = CP_Vector_Set(1, 0);
+	CP_Vector startV = VECTOR_RIGHT;
 	
 	//Thank you khan academy for this LMAOOOO
 	float angleInRadians = CP_Math_Radians(angleInDeg);
@@ -255,7 +266,8 @@ CP_Vector PointInCircle(CircleArea circle, float angleInDeg)
 	return resultingVector;
 }
 
-
+//Gets a point in the circle that is angleInDeg away from VECTOR_RIGHT
+//Note: Increasing the angle returns a point in the clockwise direction from VECTOR_RIGHT
 CP_Vector GetPointInCircle(CircleArea circle, float angleInDeg)
 {
 	CP_Vector circlePos = CP_Vector_Set(circle.x, circle.y);
@@ -264,18 +276,21 @@ CP_Vector GetPointInCircle(CircleArea circle, float angleInDeg)
 	return CP_Vector_Add(circlePos,result);
 }
 
-
+//Rotates a vector by angleInDeg.
+//Note: Increasing the angle returns a vector in the clockwise direction from VECTOR_RIGHT
 CP_Vector RotateVectorByAngle(CP_Vector vector, float angleInDeg)
 {
 	float vectorMagnitude = CP_Vector_Length(vector);
 	CP_Vector normalisedV = CP_Vector_Normalize(vector);
 	float angleInRadians = CP_Math_Radians(angleInDeg);
+	//Thank you khan academy for this LMAOOOO
 	float x2 = (normalisedV.x * cosf(angleInRadians) - normalisedV.y * sinf(angleInRadians));
 	float y2 = (normalisedV.x * sinf(angleInRadians) + normalisedV.y * (cosf(angleInRadians)));
 	CP_Vector resultVector = CP_Vector_Set(x2 * vectorMagnitude, y2 * vectorMagnitude);
 	return resultVector;
 }
 
+//Draws a triangle with the 3 points and rotation in degrees for the triangle
 void DrawTriangleAdvanced(CP_Vector a, CP_Vector b, CP_Vector c, float deg)
 {
 	CP_Settings_Fill(FULL_WHITE);
