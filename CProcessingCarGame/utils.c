@@ -14,21 +14,37 @@
 //DisplayButton is called to set the color.
 _Bool IsButtonClicked(Button _button, CP_Vector mousePos, CP_POSITION_MODE mode)
 {
-	//Hacky way to change the color of the button when pressed imo
-	CP_ColorHSL cachedColor = CP_ColorHSL_FromColor(_button.rectData.color);
+	
 	if (IsAreaClicked(_button.rectData, mousePos, mode))
 	{
-		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, cachedColor.s / 2, cachedColor.l / 2, 255));
-		DisplayButton(_button);
+		
 		return TRUE;
 	}
 	else
 	{
-		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
+		
 		return FALSE;
 	}
 }
 
+//Updates the button if it has been clicked, changing it's color by halving saturation and luminosity and adding a BLACK stroke
+//Also calls the function in the button
+void UpdateButton(Button _button, CP_Vector mousePos, CP_POSITION_MODE mode)
+{
+	//Hacky way to change the color of the button when pressed imo
+	CP_ColorHSL cachedColor = CP_ColorHSL_FromColor(_button.rectData.color);
+	if (IsButtonClicked(_button, mousePos, mode))
+	{
+		_button.buttEvent();
+		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, cachedColor.s / 2, cachedColor.l / 2, 255));
+		CP_Settings_Stroke(BLACK);
+		DisplayButton(_button);
+	}
+	else
+	{
+		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
+	}
+}
 
 //Checks if the mouse has clicked within the rect area
 _Bool IsAreaClicked(RectArea rect, CP_Vector mousePos, CP_POSITION_MODE mode)
@@ -72,12 +88,13 @@ _Bool IsAreaClicked(RectArea rect, CP_Vector mousePos, CP_POSITION_MODE mode)
 //Wrapper for some reason. I feel like this is correct? but at the same time it feels redundant
 
 //Creates a button at the positions specified, and sets its size, text and color.
-Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color _color)
+Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color _color, ButtonEvent buttonFunction)
 {
 	Button newButton;
 	newButton.rectData = CreateRectArea(_x, _y, _sizeX, _sizeY);
 	newButton.rectData.color = _color;
 	newButton.text = text;
+	newButton.buttEvent = buttonFunction;
 	return newButton;
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "cprocessing.h"
+#include "cprocessing_common.h"
 
 //Struct containing the 4 floats, corresponding to position x, position y, size x and size y and color 
 //to define a Rect Area. 
@@ -18,13 +19,19 @@ typedef struct CircleArea
 	CP_Color color;
 } CircleArea; //maybe should have done a vector position
 
+typedef void(*ButtonEvent)(void);
+
 //Struct containing Rect Area and Text.
 typedef struct Button
 {
 	RectArea rectData;
 	char *text;		//Note: lol don't forget the pointer...
+	ButtonEvent buttEvent;
 	//imagine a world where I made enum states for the button... ENABLED,DISABLED,ACTIVE
 } Button;
+
+
+
 
 //===============|| RECT AREA FUNCTIONS || =============================
 
@@ -49,13 +56,15 @@ CircleArea CreateCircleArea(float _x, float _y, float _diameter, CP_Color _color
 //===============|| BUTTON FUNCTIONS || =============================
 
 //Creates a button at the position, size and color specified, with the string as its name.
-Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color color);
+Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color color, ButtonEvent buttEvent);
 //Displays text inside the button at the font color specified.
 void DisplayButtonText(Button butt, CP_Color color);
 //Displays the button specified.
 void DisplayButton(Button butt);
-//Checks if the button specified has been clicked and changes the color of the button if it has.
+//Checks if the button specified has been clicked.
 _Bool IsButtonClicked(Button _button, CP_Vector mousePos, CP_POSITION_MODE mode);
+//Updates the button if it has been clicked by changing it's color and calling the button function.
+void UpdateButton(Button _button, CP_Vector mousePos, CP_POSITION_MODE mode);
 
 //===============|| UTILITY FUNCTIONS || =============================
 
