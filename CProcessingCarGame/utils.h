@@ -1,6 +1,7 @@
 #pragma once
 #include "cprocessing.h"
 #include "cprocessing_common.h"
+#include <math.h>
 
 //Struct containing the 4 floats, corresponding to position x, position y, size x and size y and color 
 //to define a Rect Area. 
@@ -28,8 +29,8 @@ typedef struct Button
 	char *text;		//Note: lol don't forget the pointer...
 	ButtonEvent buttEvent;
 	//imagine a world where I made enum states for the button... ENABLED,DISABLED,ACTIVE
+	//also imagine a world where buttons can be circles too and you can just check for button..
 } Button;
-
 
 
 
@@ -46,8 +47,8 @@ void DisplayRect(RectArea rect);
 
 //===============|| CIRCLE AREA FUNCTIONS || =============================
 
-int IsCircleClicked(float circle_center_x, float circle_center_y, float diameter, float click_x, float click_y);
-_Bool IsCircleAreaClicked(CircleArea circleArea, CP_Vector mousePos);
+_Bool IsCircleClicked(CircleArea _circle);
+_Bool IsMouseInCircleArea(CircleArea circleArea);
 void DisplayCircle(CircleArea _circle);
 CircleArea CreateCircleArea(float _x, float _y, float _diameter, CP_Color _color);
 
@@ -62,14 +63,26 @@ void DisplayButtonText(Button butt, CP_Color color);
 //Displays the button specified.
 void DisplayButton(Button butt);
 //Checks if the button specified has been clicked.
-_Bool IsButtonClicked(Button _button, CP_Vector mousePos, CP_POSITION_MODE mode);
-//Updates the button if it has been clicked by changing it's color and calling the button function.
-void UpdateButton(Button _button, CP_Vector mousePos, CP_POSITION_MODE mode);
+_Bool IsButtonClicked(Button _button, CP_POSITION_MODE mode);
+//Checks if mouse is hovering over button specified.
+_Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode);
+//Updates the button's graphic depending on if hovered or clicked. If clicked, it calls the function assigned to the button.
+void UpdateButton(Button _button, CP_POSITION_MODE mode);
 
 //===============|| UTILITY FUNCTIONS || =============================
 
-//Checks if an area specified has been clicked.
-_Bool IsAreaClicked(RectArea rect, CP_Vector mousePos, CP_POSITION_MODE mode);
-//int IsAreaClicked(float area_center_x, float area_center_y, float area_width, float area_height, float click_x, float click_y);
+//Gets Mouse Position
+CP_Vector GetMousePosition();
 
+//Checks if an area specified has been clicked.
+_Bool MouseInRectArea(RectArea rect, CP_POSITION_MODE mode);
+//int IsAreaClicked(float area_center_x, float area_center_y, float area_width, float area_height, float click_x, float click_y);
+float fAbs(float f);
+float Vector_Distance_Squared(CP_Vector a, CP_Vector b);
+CP_Vector PointInCircle(CircleArea circle, float angleInDeg);
 union CP_Vector AngleToVector(float radian_angle);
+void DrawTriangleAdvanced(CP_Vector a, CP_Vector b, CP_Vector c, float deg);
+
+CP_Vector RotateVectorByAngle(CP_Vector vector, float angleInDeg);
+
+CP_Vector GetPointInCircle(CircleArea circle, float angleInDeg);

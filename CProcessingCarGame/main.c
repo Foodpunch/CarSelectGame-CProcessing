@@ -14,7 +14,7 @@
 
 #include "cprocessing.h"
 //#include "utils.h"
-//#include "carlevel.h"
+#include "carlevel.h"
 #include "mainmenu.h"
 
 
@@ -23,7 +23,7 @@
 void game_init(void)
 {
 	
-	
+	//CP_Engine_SetNextGameState(Main_Menu_Init, Main_Menu_Update, Main_Menu_Exit);
 	// initialize variables and CProcessing settings for this gamestate
 }
 
@@ -49,7 +49,6 @@ int main(void)
 {
 	//CP_Engine_SetNextGameState(game_init, game_update, game_exit);
 	CP_Engine_SetNextGameState(Main_Menu_Init, Main_Menu_Update, Main_Menu_Exit);
-	//CP_Engine_SetNextGameState(Car_Level_Init, Car_Level_Update, Car_Level_Exit);
 	CP_Engine_Run();
 	return 0;
 }

@@ -103,6 +103,7 @@ xcopy "$(ProjectDir)Assets\*" "$(OutDir)Assets\" /s /r /y /q</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="carlevel.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="mainmenu.c" />
     <ClCompile Include="utils.c" />
