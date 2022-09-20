@@ -10,9 +10,10 @@ CP_POSITION_MODE menuRectPosition = CP_POSITION_CENTER;
 Button StartGameButton;
 Button ExitGameButton;
 Button TestButton;
+Button ReadFileButton;
 
-CircleArea _testCircle;
-
+char *tempText = "This is temp";
+FILE* testFile;
 void Main_Menu_Init()
 {
 	CP_System_SetWindowSize(500, 500);
@@ -21,7 +22,7 @@ void Main_Menu_Init()
 	StartGameButton = CreateButton(250, 150, 150, 50, "Start Game", LIGHT_BLUE,StartGame);
 	ExitGameButton = CreateButton(250, 250, 150, 50, "Exit Game", LIGHT_BLUE,ExitGame);
 	TestButton = CreateButton(250, 350, 150, 50, "Test Button", PASTEL_GREEN2, TestFunction);
-
+	ReadFileButton = CreateButton(250, 450,150, 50, "Read text file", PASTEL_PINK, ReadFileFunction);
 }
 
 void StartGame()
@@ -37,6 +38,38 @@ void ExitGame()
 void TestFunction()
 {
 	printf("\a");
+	printf("test");
+	errno_t err;
+	err = fopen_s(&testFile, "./Assets/testfile.txt", "w");
+	if (testFile)
+	{
+		fprintf(testFile, "12345");
+		fclose(testFile);
+	}
+	
+}
+void ReadFileFunction()
+{
+	printf("test");
+	errno_t err1;
+	err1 = fopen_s(&testFile, "./Assets/testfile.txt", "r");
+	// reading line by line, max 256 bytes
+	
+	if (testFile)
+	{
+		char buffer[6];
+		if (fgets(buffer, 6, testFile))
+		{
+			tempText = buffer;
+		}
+
+		fclose(testFile);
+	}
+	
+		
+	// close the file
+	
+
 }
 
 
@@ -46,6 +79,9 @@ void Main_Menu_Update()
 	UpdateButton(StartGameButton, menuRectPosition);
 	UpdateButton(ExitGameButton, menuRectPosition);
 	UpdateButton(TestButton, menuRectPosition);
+	UpdateButton(ReadFileButton, menuRectPosition);
+
+	CP_Font_DrawText(tempText, 100, 100);
 
 	CP_Graphics_ClearBackground(LIGHT_GRAY);
 	CP_Settings_NoStroke();

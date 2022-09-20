@@ -9,4 +9,6 @@ void Main_Menu_Exit(void);
 void StartGame(void);
 void ExitGame(void);
 void TestFunction(void);
+void ReadFileFunction(void);
+
 

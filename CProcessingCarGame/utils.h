@@ -30,6 +30,7 @@ typedef struct Button
 	ButtonEvent buttEvent;
 	//imagine a world where I made enum states for the button... ENABLED,DISABLED,ACTIVE
 	//also imagine a world where buttons can be circles too and you can just check for button..
+	//Edit: button states would be really good...
 } Button;
 
 //===============|| VECTOR DEFINES || =================================
@@ -104,3 +105,5 @@ CP_Vector RotateVectorByAngle(CP_Vector vector, float angleInDeg);
 //Returns a point in the circumference of a circle. 
 //Note: 0 degrees is center of circle + radius. Increasing the angle returns a point in the clockwise direction.
 CP_Vector GetPointInCircle(CircleArea circle, float angleInDeg);
+//returns the reflected vector normalised
+CP_Vector Reflect(CP_Vector direction, CP_Vector normal);

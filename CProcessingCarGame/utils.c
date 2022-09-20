@@ -53,6 +53,7 @@ void UpdateButton(Button _button, CP_POSITION_MODE mode)
 	if (IsButtonHovered(_button, mode))
 	{
 		//TODO: fix the bug where you can actually see the previously rendered button when you hover and the button moves up.a
+		//Edit: fixing it causes it to constantly -2 and color change. Might need a coroutine or a state to check
 		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, (int)(cachedColor.s/1.1f), (int)(cachedColor.l/1.1f), 255));
 		_button.rectData.y -= 2;		//if only you could grab the stroke weight.. anyway, 2px also to hide the bug
 		CP_Settings_Stroke(GRAY);
@@ -295,4 +296,14 @@ void DrawTriangleAdvanced(CP_Vector a, CP_Vector b, CP_Vector c, float deg)
 {
 	CP_Settings_Fill(FULL_WHITE);
 	CP_Graphics_DrawTriangleAdvanced(a.x, a.y, b.x, b.y, c.x, c.y, deg);
+}
+
+CP_Vector Reflect(CP_Vector direction, CP_Vector normal)
+{
+	//r = d-2(d*n)n where n is normalised, d*n is dot product
+	CP_Vector reflectedVector;
+	normal = CP_Vector_Normalize(normal);
+	float dotProduct = CP_Vector_DotProduct(direction, normal);
+	reflectedVector = CP_Vector_Subtract(direction, (CP_Vector_Scale(normal, 2.f * (dotProduct))));
+	return reflectedVector;
 }
