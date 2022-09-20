@@ -11,22 +11,24 @@ Car CarB;
 Car CarC;
 float gameTime;
 
-int i = 0;
-char carText[64];
 Car* selectedCar;
 
 Button QuitGamebutton;
 
+RectArea instructionsText;
 
 void Car_Level_Init()
 {
-	CP_System_SetWindowSize(1000, 1000);
+	CP_System_SetWindowSize(500, 500);
 	CarA = CreateCar(250, 150, 50, LIGHT_PURPLE,20,2.0f);
 	CarB = CreateCar(250, 250, 50, LIGHT_ORANGE, 15,1.5f);
 	CarC = CreateCar(250, 350, 50, LIGHT_PINK, 20,1.f);
 	selectedCar = &CarA;
 
-	QuitGamebutton = CreateButton(500, 950, 150, 50, "Quit Game", LIGHT_RED, ExitGame);
+	QuitGamebutton = CreateButton(CP_System_GetWindowWidth() / 2.f, CP_System_GetWindowHeight() * 0.9f, 150, 50, "Quit Game", LIGHT_RED, ExitGame);
+
+	instructionsText = CreateRectArea(60, 20, 150, 50);
+
 }
 
 void Car_Level_Update()
@@ -36,11 +38,15 @@ void Car_Level_Update()
 	UpdateCar(&CarC);
 	UpdateButton(QuitGamebutton,CP_POSITION_CENTER);
 
+	CP_Settings_Fill(BLACK);
+	DisplayTextInRect(instructionsText, "WASD to move\n Space to brake \n Click to control");
+	/*
+	CP_Font_DrawText("WASD to move", 50, 50);
+	CP_Font_DrawText("Space to brake", 50, 60);
+	CP_Font_DrawText("Click on cars to control them", 50, 70);*/
+
+
 	MoveCar(selectedCar);
-	i = sprintf_s(carText, 64,"Current Speed : %.2f ", CP_Vector_Length(selectedCar->velocity));
-	i += sprintf_s(carText+i, 64 - i, "x : %.2f ", selectedCar->direction.x);
-	i += sprintf_s(carText+i, 64-i, "y : %.2f", selectedCar->direction.y);
-	CP_Font_DrawText(carText, 200, 10);
 	CP_Graphics_ClearBackground(LIGHT_GRAY);
 	
 }
@@ -80,8 +86,16 @@ void UpdateCar(Car *car)
 		selectedCar = car;
 	}
 
+	//Hacky text thing to display car stats
+	int j = 0;
+	char carText[64];
+	j = sprintf_s(carText, 64, "Speed : %.2f ", CP_Vector_Length(car->velocity));
+	j += sprintf_s(carText + j, 64 - j, "Mass : %.0f ", car->mass);
+	j += sprintf_s(carText + j, 64 - j, "Max speed : %.2f", car->moveSpeed);
+	CP_Settings_Fill(BLACK);
+	CP_Font_DrawText(carText, car->circleData.x, car->circleData.y - 50);
 
-	//Hacky collisoon detection
+	//Hacky collision detection
 	_Bool CheckLeftBounds = (car->circleData.x < car->circleData.diameter / 2.f);
 	_Bool CheckRightBounds = (car->circleData.x > ((float)CP_System_GetWindowWidth() - car->circleData.diameter / 2.f));
 	_Bool CheckTopBounds = (car->circleData.y < car->circleData.diameter / 2.f);
@@ -94,21 +108,19 @@ void UpdateCar(Car *car)
 
 
 
-	//Car physics stuff
-
-
-
+	//Hacky Car physics stuff, needs heavy clean up. 
 	car->direction = RotateVectorByAngle(VECTOR_UP, car->angleInDeg);
 	car->velocity = CP_Vector_Set(car->direction.x*car->acceleration, car->direction.y* car->acceleration);
 
 	car->circleData.x += (car->velocity.x * car->moveSpeed) * CP_System_GetDt();
 	car->circleData.y += (car->velocity.y * car->moveSpeed) * CP_System_GetDt();
-
+	//Checks for acceleration here so you can accelerate and reverse properly
 	if (car->acceleration > 0.0f) car->acceleration -= (1.f / car->mass) * CP_System_GetDt();
 	else if (car->acceleration < 0.0f) car->acceleration += (1.f / car->mass) * CP_System_GetDt();
-	if (CP_Vector_Length(car->velocity) < 0.01f) car->acceleration = 0.0f;
-	if (car->acceleration >= car->moveSpeed) car->acceleration = car->moveSpeed;//clamp movespeed
-	if (car->acceleration <= -car->moveSpeed) car->acceleration = -car->moveSpeed;//clamp movespeed
+
+	if (CP_Vector_Length(car->velocity) < 0.01f) car->acceleration = 0.0f;			//clamps acceleration to zero
+	if (car->acceleration >= car->moveSpeed) car->acceleration = car->moveSpeed;	//clamp movespeed
+	if (car->acceleration <= -car->moveSpeed) car->acceleration = -car->moveSpeed;	//clamp movespeed
 	DisplayCar(car);
 }
 
@@ -133,4 +145,11 @@ void MoveCar(Car *car)
 	{
 		car->angleInDeg -= 10.f;
 	}
+	if (CP_Input_KeyDown(KEY_SPACE))
+	{
+		car->acceleration /= 1.1f;
+	}
+	CP_Settings_Stroke(BLACK);
+	DisplayCar(car);
+	CP_Settings_NoStroke();
 }

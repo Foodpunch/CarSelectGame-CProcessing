@@ -117,6 +117,10 @@ _Bool MouseInRectArea(RectArea rect, CP_POSITION_MODE mode)
 
 
 //Wrapper for some reason. I feel like this is correct? but at the same time it feels redundant
+//I think I need to have an updatebutton function somewhere in here to constantly update all buttons.
+//Maybe store them in some array and have it just call one UpdateGUI(); much like in unity.
+//The settings in the UI can also be split and refined more.
+
 
 //Creates a button at the positions specified, and sets its size, text and color.
 Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color _color, ButtonEvent buttonFunction)

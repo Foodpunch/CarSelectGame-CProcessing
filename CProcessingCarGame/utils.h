@@ -51,7 +51,8 @@ typedef struct Button
 RectArea CreateRectAreaWithColor(float _x, float _y, float _sizeX, float _sizeY, CP_Color _color);
 //Creates a rectangular area at the position and size specified.
 RectArea CreateRectArea(float x, float y, float sizeX, float sizeY);
-//Displays text inside the rectangular area given.
+//Displays text inside the rectangular area given. D
+//Note: alignment for text is defaulted to center v center h.
 void DisplayTextInRect(RectArea rect,const char *text);
 //Displays the rectangular area given
 void DisplayRect(RectArea rect);

@@ -95,7 +95,7 @@
 //Some colors have bad names, especially from green onwards, the names aren't very clear.
 
 //Pastel Red
-#define PASTEL_RED CP_Color_Create(96,96,96,255)
+#define PASTEL_RED CP_Color_Create(255,204,204,255)
 //Pastel Orange
 #define PASTEL_ORANGE CP_Color_Create(255,229,204,255)
 //Pastel Yellow

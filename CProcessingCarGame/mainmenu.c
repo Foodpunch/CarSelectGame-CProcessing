@@ -12,7 +12,7 @@ Button ExitGameButton;
 Button TestButton;
 Button ReadFileButton;
 
-char *tempText = "This is temp";
+char *tempText = "Car Select Game";
 FILE* testFile;
 void Main_Menu_Init()
 {
@@ -20,7 +20,7 @@ void Main_Menu_Init()
 	CP_Settings_RectMode(menuRectPosition);
 
 	StartGameButton = CreateButton(250, 150, 150, 50, "Start Game", LIGHT_BLUE,StartGame);
-	ExitGameButton = CreateButton(250, 250, 150, 50, "Exit Game", LIGHT_BLUE,ExitGame);
+	ExitGameButton = CreateButton(250, 250, 150, 50, "Exit Game", LIGHT_RED ,ExitGame);
 	TestButton = CreateButton(250, 350, 150, 50, "Test Button", PASTEL_GREEN2, TestFunction);
 	ReadFileButton = CreateButton(250, 450,150, 50, "Read text file", PASTEL_PINK, ReadFileFunction);
 }
@@ -46,7 +46,6 @@ void TestFunction()
 		fprintf(testFile, "12345");
 		fclose(testFile);
 	}
-	
 }
 void ReadFileFunction()
 {
@@ -78,10 +77,10 @@ void Main_Menu_Update()
 
 	UpdateButton(StartGameButton, menuRectPosition);
 	UpdateButton(ExitGameButton, menuRectPosition);
-	UpdateButton(TestButton, menuRectPosition);
-	UpdateButton(ReadFileButton, menuRectPosition);
+	//UpdateButton(TestButton, menuRectPosition);
+	//UpdateButton(ReadFileButton, menuRectPosition);
 
-	CP_Font_DrawText(tempText, 100, 100);
+	CP_Font_DrawText(tempText, 250, 50);
 
 	CP_Graphics_ClearBackground(LIGHT_GRAY);
 	CP_Settings_NoStroke();
