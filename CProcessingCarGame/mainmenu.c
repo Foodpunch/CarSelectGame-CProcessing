@@ -24,6 +24,7 @@ ShapeButton circleEllipseButton;
 
 char *tempText = "Car Select Game";
 FILE* testFile;
+char buffer2[64];
 void Main_Menu_Init()
 {
 	CP_System_SetWindowSize(500, 500);
@@ -42,7 +43,7 @@ void Main_Menu_Init()
 	rectButton = CreateShapeButton(testRect, "rectangle button",LIGHT_BLUE, StartGame);
 	circleButton = CreateShapeButton(testCircle, "circle button",LIGHT_RED, StartGame);
 	ellipseButton = CreateShapeButton(testEllipse, "ellipse button",LIGHT_GREEN, StartGame);
-	circleEllipseButton = CreateShapeButton(testCircleEllipse, "circle ellipse button",LIGHT_YELLOW, StartGame);
+	circleEllipseButton = CreateShapeButton(testCircleEllipse, "circle ellipse button",LIGHT_YELLOW, RandomNoise);
 
 }
 
@@ -50,7 +51,12 @@ void StartGame()
 {
 	CP_Engine_SetNextGameState(Car_Level_Init, Car_Level_Update, Car_Level_Exit);
 }
-
+void RandomNoise()
+{
+	Shake();
+	//snprintf(buffer2, sizeof buffer2, "%f", PerlinNoise(CP_Random_RangeInt(1,10), 10));
+	
+}
 void ExitGame()
 {
 	CP_Engine_Terminate();
@@ -96,28 +102,11 @@ void ReadFileFunction()
 void Main_Menu_Update()
 {
 
-	//UpdateButton(StartGameButton, menuRectPosition);
-	//UpdateButton(ExitGameButton, menuRectPosition);
-	//UpdateButton(TestButton, menuRectPosition);
-	//UpdateButton(ReadFileButton, menuRectPosition);
-	//CP_Settings_Stroke(BLACK);
-	//CP_Settings_Fill(LIGHT_RED);
-	UpdateShapebutton(&rectButton);
-	//DrawShape(testRect);
-	//CP_Settings_Fill(LIGHT_YELLOW);
-	UpdateShapebutton(&circleButton);
-	//DrawShape(testCircle);
-	//CP_Settings_Fill(LIGHT_ORANGE);
-	UpdateShapebutton(&ellipseButton);
-	//DrawShape(testEllipse);
-	//CP_Settings_Fill(LIGHT_GREEN);
-	UpdateShapebutton(&circleEllipseButton);
-	//DrawShape(testCircleEllipse);
 
+	UpdateCameraShaker();
+	UpdateGUI();
 	
-
-	CP_Font_DrawText(tempText, 250, 50);
-
+	CP_Font_DrawText(buffer2, 250, 50);
 	CP_Graphics_ClearBackground(LIGHT_GRAY);
 	CP_Settings_NoStroke();
 }

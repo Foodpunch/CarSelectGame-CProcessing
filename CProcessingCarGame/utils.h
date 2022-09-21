@@ -104,7 +104,7 @@ void UpdateShapebutton(ShapeButton *_button);
 void DisplayTextInShape(Shape shape, const char* text);
 void DisplayButtonText(ShapeButton *_button, CP_Color _color);
 void DisplayButton(ShapeButton *_button);
-
+void UpdateGUI(void);
 //===============|| RECT AREA FUNCTIONS || =============================
 
 //Creates a rectangular area at the position, size and color specified.
@@ -135,9 +135,9 @@ CircleArea CreateCircleArea(float _x, float _y, float _diameter, CP_Color _color
 //Displays the button specified.
 //void DisplayButton(Button butt);
 //Checks if the button specified has been clicked.
-_Bool IsButtonClicked(Button _button, CP_POSITION_MODE mode);
+//_Bool IsButtonClicked(Button _button, CP_POSITION_MODE mode);
 //Checks if mouse is hovering over button specified.
-_Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode);
+//_Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode);
 //Updates the button's graphic depending on if hovered or clicked. If clicked, it calls the function assigned to the button.
 //void UpdateButton(Button _button, CP_POSITION_MODE mode);
 
@@ -147,7 +147,7 @@ _Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode);
 CP_Vector GetMousePosition();
 
 //Checks if an area specified has been clicked.
-_Bool MouseInRectArea(RectArea rect, CP_POSITION_MODE mode);
+//_Bool MouseInRectArea(RectArea rect, CP_POSITION_MODE mode);
 //int IsAreaClicked(float area_center_x, float area_center_y, float area_width, float area_height, float click_x, float click_y);
 
 //Returns the absolute value of a float
@@ -168,3 +168,13 @@ CP_Vector RotateVectorByAngle(CP_Vector vector, float angleInDeg);
 CP_Vector GetPointInCircle(CircleArea circle, float angleInDeg);
 //returns the reflected vector normalised
 CP_Vector Reflect(CP_Vector direction, CP_Vector normal);
+float PerlinNoise(int x, int y);	
+CP_Vector GetRandomVector(void);
+
+//===============|| CAMERA FUNCTIONS || =============================
+//Function that Updates the camera shaker. Must be called in update loop for the camera shaker to work.
+void UpdateCameraShaker(void);
+//Example function to shake the camera. 
+//Note: Trauma value is clamped between 0-1. Anything above 0 will produce a shake.
+//Edit the strength of the shake by editing the trauma numbers.
+void Shake(void);

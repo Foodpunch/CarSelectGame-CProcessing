@@ -12,3 +12,4 @@ void TestFunction(void);
 void ReadFileFunction(void);
 
 
+void RandomNoise(void);

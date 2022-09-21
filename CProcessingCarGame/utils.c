@@ -7,21 +7,19 @@
 //Basically an over engineered utils.c file. 
 //At least making buttons in the future might be easier (?) lol
 
+//Button buffer? GUI Buffer?? Not sure what this should be called. 
+//Feels like it should be an array of all GUI objects...
+ShapeButton ButtonArray[100];
+int buttonIndex = 0;		//index for the buttons. Used when creating and when updating
+
+
 //Gets the mouse input X and Y from CProcessing and puts them into a vector
 CP_Vector GetMousePosition()
 {
 	return CP_Vector_Set(CP_Input_GetMouseX(), CP_Input_GetMouseY());
 }
 
-//Checks if button has been clicked, uses CProcessing's mouse inputs
-_Bool IsButtonClicked(Button _button, CP_POSITION_MODE mode)
-{
-	if (CP_Input_MouseDown(MOUSE_BUTTON_LEFT) && IsButtonHovered(_button,mode))
-	{
-		return TRUE;
-	}
-	else return FALSE;
-}
+
 _Bool IsShapeButtonHovered(ShapeButton *_button)
 {
 	return IsMouseInShapeArea(_button->shape);
@@ -32,20 +30,9 @@ _Bool IsShapeButtonClicked(ShapeButton *_button)
 	return(CP_Input_MouseDown(MOUSE_BUTTON_LEFT) && IsShapeButtonHovered(_button));
 }
 
-//Checks if button is being hovered over by the mouse using CProcessing's mouse inputs
-_Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode)
-{
-	if (MouseInRectArea(_button.rectData, mode))
-	{
 
-		return TRUE;
-	}
-	else
-	{
-		return FALSE;
-	}
-}
 
+#pragma region Delete this later
 //Updates the button if it has been clicked, changing it's color by halving saturation and luminosity and adding a BLACK stroke
 //Also calls the function in the button
 //void UpdateButton(Button _button, CP_POSITION_MODE mode)
@@ -85,89 +72,6 @@ _Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode)
 //	//DisplayButton(_button);
 //}
 
-void UpdateShapebutton(ShapeButton *_button)
-{
-	//Maybe next time add buttons to an array when created, then updatebutton just updates all buttons in the button array
-	//Requires dynamic arrays I think? 
-	DisplayButton(_button);
-	//Hacky way to change the color of the button when pressed imo. 
-	CP_ColorHSL cachedColor = CP_ColorHSL_FromColor(_button->cachedColor);
-
-	//Moving the button up when its hovered is a nice way to show it's being hovered without color.
-	if (IsShapeButtonHovered(_button))
-	{
-		//TODO: Fix the bug where the button spazzes out if you hover from below. 
-		//I think you probably need to check from the cached position.
-		_button->color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, (int)(cachedColor.s * 1.1f), (int)(cachedColor.l / 1.1f), 255));
-		_button->shape.transform.position.y =_button->cachedTransform.position.y - 3;		//if only you could grab the stroke weight.. anyway, 2px also to hide the bug
-		CP_Settings_Stroke(GRAY);
-		DisplayButton(_button);
-		//_button->shape.transform = _button->cachedTransform;
-	}
-	else
-	{
-		_button->shape.transform = _button->cachedTransform;
-		_button->color = CP_Color_FromColorHSL(cachedColor);
-	}
-	if (IsShapeButtonClicked(_button))
-	{
-		_button->buttEvent();
-		_button->color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, cachedColor.s / 2, cachedColor.l / 2, 255));
-		CP_Settings_Stroke(BLACK);
-		DisplayButton(_button);
-	}
-	else
-	{
-		_button->color = CP_Color_FromColorHSL(cachedColor);
-	}
-	//DisplayButton(_button);
-}
-
-//Checks if the mouse position is within the rect area
-_Bool MouseInRectArea(RectArea rect, CP_POSITION_MODE mode)
-{
-	//Might not be correct to do this here but I'm testing
-	if (mode == CP_POSITION_CORNER) //By default we use center ba..
-	{	//simple checking of bounds
-		_Bool IsWithinX_CORNERMODE = (GetMousePosition().x >= rect.x) && (GetMousePosition().x <= (rect.x + rect.sizeX));
-		_Bool IsWithinY_CORNERMODE = (GetMousePosition().y >= rect.y) && (GetMousePosition().y <= (rect.y + rect.sizeY));
-		if (IsWithinX_CORNERMODE && IsWithinY_CORNERMODE)
-		{
-			return TRUE;
-		}
-		else
-		{
-			return FALSE;
-		}
-	}
-	else if (mode == CP_POSITION_CENTER)
-	{	//since x is in the center of the button now, you need to add the size of X/2 to check right, and -size of X/2 to check left. 
-		//same for y axis (just in case anyone actually reads this lmao)
-		_Bool IsWithinX_CENTERMODE = (GetMousePosition().x >= rect.x - (rect.sizeX / 2.f)) && ((GetMousePosition().x <= rect.x + (rect.sizeX / 2.f)));
-		_Bool IsWithinY_CENTERMODE = (GetMousePosition().y >= rect.y - (rect.sizeY / 2.f)) && ((GetMousePosition().y <= rect.y + (rect.sizeY / 2.f)));
-		if (IsWithinX_CENTERMODE && IsWithinY_CENTERMODE)
-		{
-			return TRUE;
-		}
-		else
-		{
-			return FALSE;
-		}
-	}
-	//probably should do a debug.log error here? idk
-	return FALSE;
-}
-
-
-
-
-
-//Wrapper for some reason. I feel like this is correct? but at the same time it feels redundant
-//I think I need to have an updatebutton function somewhere in here to constantly update all buttons.
-//Maybe store them in some array and have it just call one UpdateGUI(); much like in unity.
-//The settings in the UI can also be split and refined more.
-
-
 //Creates a button at the positions specified, and sets its size, text and color.
 //Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color _color, ButtonEvent buttonFunction)
 //{
@@ -179,20 +83,6 @@ _Bool MouseInRectArea(RectArea rect, CP_POSITION_MODE mode)
 //	return newButton;
 //}
 
-ShapeButton CreateShapeButton(Shape shape, const char* buttonText,CP_Color color, ButtonEvent buttEvent) 
-{
-	ShapeButton newButton;
-	//for now
-	newButton.color = color;
-	newButton.shape = shape;
-	newButton.text = buttonText;
-	newButton.buttEvent = buttEvent;
-	newButton.cachedTransform = shape.transform;
-	newButton.cachedColor = color;
-	return newButton;
-}
-
-
 //Displays Text in the Rect Area specified. Default alignment is in the center
 //Note: Font size is not set in this function
 //void DisplayTextInRect(RectArea rect,const char *text)
@@ -201,31 +91,6 @@ ShapeButton CreateShapeButton(Shape shape, const char* buttonText,CP_Color color
 //	//Textbox pivots start from right to left
 //	CP_Font_DrawTextBox(text, rect.x - (float)(rect.sizeX / 2.f), rect.y, rect.sizeX);
 //}
-void DisplayTextInShape(Shape shape, const char* text)
-{
-	CP_Settings_TextAlignment(CP_TEXT_ALIGN_H_CENTER, CP_TEXT_ALIGN_V_MIDDLE);
-	if(shape.shape == SHAPE_ELLIPSE || shape.shape == SHAPE_RECTANGLE)
-	//Textbox pivots start from right to left
-	CP_Font_DrawTextBox(text, shape.transform.position.x - (float)(shape.transform.size.x / 2.f), shape.transform.position.y, shape.transform.size.x);
-	if(shape.shape == SHAPE_CIRCLE)
-	CP_Font_DrawTextBox(text, shape.transform.position.x - (float)(shape.transform.size.x / 2.f), shape.transform.position.y- (float)(shape.transform.size.x / 2.f), shape.transform.size.x);
-
-}
-//Displays the button text, setting the color to the one specified.
-//Note: Default color is BLACK. (If BLACK doesn't exist, colortable.h is missing)
-void DisplayButtonText(ShapeButton *_button,CP_Color _color)
-{
-	CP_Settings_Fill(_color); //Color for the font, not button
-	DisplayTextInShape(_button->shape, _button->text);
-}
-void DisplayButton(ShapeButton *button)
-{
-	CP_Settings_Fill(button->color);
-	DisplayShape(button->shape);
-	DisplayButtonText(button, BLACK);
-	CP_Settings_NoStroke();
-}
-
 //Displays the Rect Area by using CProcessing's DrawRect, using the color specified.
 //Note: This function calls the CP_Settings_Fill function first before drawing the rect area
 //void DisplayRect(RectArea rect)
@@ -264,6 +129,168 @@ void DisplayButton(ShapeButton *button)
 //	newRect.color = _color;
 //	return newRect;
 //}
+//Checks if button has been clicked, uses CProcessing's mouse inputs
+//_Bool IsButtonClicked(Button _button, CP_POSITION_MODE mode)
+//{
+//	if (CP_Input_MouseDown(MOUSE_BUTTON_LEFT) && IsButtonHovered(_button,mode))
+//	{
+//		return TRUE;
+//	}
+//	else return FALSE;
+//}
+////Checks if the mouse position is within the rect area
+//_Bool MouseInRectArea(RectArea rect, CP_POSITION_MODE mode)
+//{
+//	//Might not be correct to do this here but I'm testing
+//	if (mode == CP_POSITION_CORNER) //By default we use center ba..
+//	{	//simple checking of bounds
+//		_Bool IsWithinX_CORNERMODE = (GetMousePosition().x >= rect.x) && (GetMousePosition().x <= (rect.x + rect.sizeX));
+//		_Bool IsWithinY_CORNERMODE = (GetMousePosition().y >= rect.y) && (GetMousePosition().y <= (rect.y + rect.sizeY));
+//		if (IsWithinX_CORNERMODE && IsWithinY_CORNERMODE)
+//		{
+//			return TRUE;
+//		}
+//		else
+//		{
+//			return FALSE;
+//		}
+//	}
+//	else if (mode == CP_POSITION_CENTER)
+//	{	//since x is in the center of the button now, you need to add the size of X/2 to check right, and -size of X/2 to check left. 
+//		//same for y axis (just in case anyone actually reads this lmao)
+//		_Bool IsWithinX_CENTERMODE = (GetMousePosition().x >= rect.x - (rect.sizeX / 2.f)) && ((GetMousePosition().x <= rect.x + (rect.sizeX / 2.f)));
+//		_Bool IsWithinY_CENTERMODE = (GetMousePosition().y >= rect.y - (rect.sizeY / 2.f)) && ((GetMousePosition().y <= rect.y + (rect.sizeY / 2.f)));
+//		if (IsWithinX_CENTERMODE && IsWithinY_CENTERMODE)
+//		{
+//			return TRUE;
+//		}
+//		else
+//		{
+//			return FALSE;
+//		}
+//	}
+//	//probably should do a debug.log error here? idk
+//	return FALSE;
+//}
+//Checks if button is being hovered over by the mouse using CProcessing's mouse inputs
+//_Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode)
+//{
+//	if (MouseInRectArea(_button.rectData, mode))
+//	{
+//
+//		return TRUE;
+//	}
+//	else
+//	{
+//		return FALSE;
+//	}
+//}
+#pragma endregion
+
+
+void UpdateShapebutton(ShapeButton *_button)
+{
+	DisplayButton(_button);
+
+	//Hacky way to change the color of the button when pressed imo. 
+	CP_ColorHSL cachedColor = CP_ColorHSL_FromColor(_button->cachedColor);
+
+	//Moving the button up when its hovered is a nice way to show it's being hovered without color.
+	if (IsShapeButtonHovered(_button))
+	{
+		//TODO: Fix the bug where the button spazzes out if you hover from below. 
+		//I think you probably need to check from the cached position.
+		//Edit: "fixed" by scaling the button up a little upon hover. DO NOT LOWER THE 1.12f!!!
+		_button->color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, (int)(cachedColor.s * 1.1f), (int)(cachedColor.l / 1.1f), 255));
+		_button->shape.transform.position.y =_button->cachedTransform.position.y - 3;		//if only you could grab the stroke weight.. anyway, 2px also to hide the bug
+		_button->shape.transform.size = CP_Vector_Scale(_button->cachedTransform.size, 1.12f); //DO NOT LOWER THE 1.12f!!!
+		CP_Settings_Stroke(GRAY);
+		DisplayButton(_button);
+	}
+	else
+	{
+		_button->shape.transform = _button->cachedTransform;
+		_button->color = CP_Color_FromColorHSL(cachedColor);
+	}
+	if (IsShapeButtonClicked(_button))
+	{
+		_button->buttEvent();
+		_button->color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, cachedColor.s / 2, cachedColor.l / 2, 255));
+		CP_Settings_Stroke(BLACK);
+		DisplayButton(_button);
+	}
+	else
+	{
+		_button->color = CP_Color_FromColorHSL(cachedColor);
+	}
+}
+
+
+
+
+
+
+
+//Wrapper for some reason. I feel like this is correct? but at the same time it feels redundant
+//I think I need to have an updatebutton function somewhere in here to constantly update all buttons.
+//Maybe store them in some array and have it just call one UpdateGUI(); much like in unity.
+//The settings in the UI can also be split and refined more.
+
+
+
+
+ShapeButton CreateShapeButton(Shape shape, const char* buttonText,CP_Color color, ButtonEvent buttEvent) 
+{
+	ShapeButton newButton;
+	//for now
+	newButton.color = color;
+	newButton.shape = shape;
+	newButton.text = buttonText;
+	newButton.buttEvent = buttEvent;
+	newButton.cachedTransform = shape.transform;
+	newButton.cachedColor = color;
+
+	ButtonArray[buttonIndex] = newButton;
+
+	buttonIndex+=1;
+
+	return newButton;
+}
+
+void UpdateGUI()
+{
+	for (short i = 0; i < buttonIndex; ++i)
+	{
+		UpdateShapebutton(&ButtonArray[i]);
+	}
+}
+
+void DisplayTextInShape(Shape shape, const char* text)
+{
+	CP_Settings_TextAlignment(CP_TEXT_ALIGN_H_CENTER, CP_TEXT_ALIGN_V_MIDDLE);
+	if(shape.shape == SHAPE_ELLIPSE || shape.shape == SHAPE_RECTANGLE)
+	//Textbox pivots start from right to left
+	CP_Font_DrawTextBox(text, shape.transform.position.x - (float)(shape.transform.size.x / 2.f), shape.transform.position.y, shape.transform.size.x);
+	if(shape.shape == SHAPE_CIRCLE)
+	CP_Font_DrawTextBox(text, shape.transform.position.x - (float)(shape.transform.size.x / 2.f), shape.transform.position.y- (float)(shape.transform.size.x / 2.f), shape.transform.size.x);
+
+}
+//Displays the button text, setting the color to the one specified.
+//Note: Default color is BLACK. (If BLACK doesn't exist, colortable.h is missing)
+void DisplayButtonText(ShapeButton *_button,CP_Color _color)
+{
+	CP_Settings_Fill(_color); //Color for the font, not button
+	DisplayTextInShape(_button->shape, _button->text);
+}
+void DisplayButton(ShapeButton *button)
+{
+	CP_Settings_Fill(button->color);
+	DisplayShape(button->shape);
+	DisplayButtonText(button, BLACK);
+	CP_Settings_NoStroke();
+}
+
+
 
 //which apparently you can't overload functions :c
 
@@ -463,4 +490,66 @@ CP_Vector Reflect(CP_Vector direction, CP_Vector normal)
 	float dotProduct = CP_Vector_DotProduct(direction, normal);
 	reflectedVector = CP_Vector_Subtract(direction, (CP_Vector_Scale(normal, 2.f * (dotProduct))));
 	return reflectedVector;
+}
+
+float PerlinNoise(int x, int y)
+{
+	int n;
+	n = x + y + 57;
+	n = (n << 13) ^ n;
+	return (float)(1.0 - ((n * ((n * n * 15731) + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);
+}
+
+
+//========================================= CAMERA SHAKER STUFF======================================================
+
+_Bool cameraShakeActive = TRUE;		//Set to false to disable camera shake completely
+float trauma;						//Clamped to 0 to 1, will be used to control the shaking
+float traumaMult = 16;				//the POWERRR of the shake
+float traumaMagnitude = 7.f;		//Range of movement when translated. 
+float traumaRotationMagnitude = 17.f;		//Range of rotation (not used)
+float traumaDecay = 1.3f;					//the speed at which the shake falls off
+
+float timeCounter = 0;						//counter for time
+
+//By right, supposed to seed it but laze
+float GetPerlinFloat(float seed)
+{
+	return(CP_Random_Noise(seed, timeCounter,0) - .5f) * 2.f;
+}
+
+//Gets a random vector based off of perlin floats.
+//Note: if you want it to be seeded, you need to create a random seed in this function for the getfloat.
+CP_Vector GetRandomVector(void)
+{
+	//CP_Random_NoiseSeed //probably? then I can just delete the need for the seed since this sets it. Just random a number in.
+	return CP_Vector_Set(GetPerlinFloat(1), GetPerlinFloat(10));
+}
+
+//Function that updates the camera shaker. Handles the translation and the decay calculations
+void UpdateCameraShaker(void)
+{
+	trauma = CP_Math_ClampFloat(trauma, 0.f, 1.f);
+	if (cameraShakeActive && trauma > 0)
+	{
+		timeCounter += CP_System_GetDt() * (float)pow(trauma, 0.3f) * traumaMult;
+		CP_Vector newPos = CP_Vector_Scale(GetRandomVector(), traumaMagnitude * trauma);
+		//float newRot = newPos.x * traumaRotationMagnitude;	//no rotation shake because camera rotates from upper left
+		//CP_Settings_Rotate(newRot);
+		CP_Settings_Translate(newPos.x*traumaMagnitude*trauma, newPos.y * traumaMagnitude * trauma);
+		trauma -= CP_System_GetDt() * traumaDecay * (trauma + 0.3f);
+	}
+	else
+	{
+		//This is where you would normally reset the positions for the camera.
+		// I do not know why CProcessing somehow doesn't need to do that?
+		//CP_Settings_Rotate(0);
+		//CP_Settings_Translate(0, 0);
+	}
+}
+
+//Example Shake Function. Just add trauma to shake the camera
+void Shake(void)
+{
+	trauma += 0.2f;
 }
