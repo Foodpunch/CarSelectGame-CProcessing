@@ -22,9 +22,14 @@ _Bool IsButtonClicked(Button _button, CP_POSITION_MODE mode)
 	}
 	else return FALSE;
 }
-_Bool IsShapeButtonHovered(ShapeButton _button)
+_Bool IsShapeButtonHovered(ShapeButton *_button)
 {
-	return IsMouseInShapeArea(_button.shape) ? TRUE : FALSE;
+	return IsMouseInShapeArea(_button->shape);
+}
+
+_Bool IsShapeButtonClicked(ShapeButton *_button)
+{
+	return(CP_Input_MouseDown(MOUSE_BUTTON_LEFT) && IsShapeButtonHovered(_button));
 }
 
 //Checks if button is being hovered over by the mouse using CProcessing's mouse inputs
@@ -37,83 +42,83 @@ _Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode)
 	}
 	else
 	{
-
 		return FALSE;
 	}
 }
 
 //Updates the button if it has been clicked, changing it's color by halving saturation and luminosity and adding a BLACK stroke
 //Also calls the function in the button
-void UpdateButton(Button _button, CP_POSITION_MODE mode)
-{	
-	//Maybe next time add buttons to an array when created, then updatebutton just updates all buttons in the button array
-	//Requires dynamic arrays I think? 
-	DisplayButton(_button);
+//void UpdateButton(Button _button, CP_POSITION_MODE mode)
+//{	
+//	//Maybe next time add buttons to an array when created, then updatebutton just updates all buttons in the button array
+//	//Requires dynamic arrays I think? 
+//	DisplayButton(_button);
+//
+//	//Hacky way to change the color of the button when pressed imo. 
+//	CP_ColorHSL cachedColor = CP_ColorHSL_FromColor(_button.rectData.color);
+//	
+//	//Moving the button up when its hovered is a nice way to show it's being hovered without color.
+//	if (IsButtonHovered(_button, mode))
+//	{
+//		//TODO: fix the bug where you can actually see the previously rendered button when you hover and the button moves up.a
+//		//Edit: fixing it causes it to constantly -2 and color change. Might need a coroutine or a state to check
+//		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, (int)(cachedColor.s/1.1f), (int)(cachedColor.l/1.1f), 255));
+//		_button.rectData.y -= 2;		//if only you could grab the stroke weight.. anyway, 2px also to hide the bug
+//		CP_Settings_Stroke(GRAY);
+//		DisplayButton(_button);
+//	}
+//	else
+//	{
+//		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
+//	}
+//	if (IsButtonClicked(_button, mode))
+//	{
+//		_button.buttEvent();
+//		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, cachedColor.s / 2, cachedColor.l / 2, 255));
+//		CP_Settings_Stroke(BLACK);
+//		DisplayButton(_button);
+//	}
+//	else
+//	{
+//		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
+//	}
+//	//DisplayButton(_button);
+//}
 
-	//Hacky way to change the color of the button when pressed imo. 
-	CP_ColorHSL cachedColor = CP_ColorHSL_FromColor(_button.rectData.color);
-	
-	//Moving the button up when its hovered is a nice way to show it's being hovered without color.
-	if (IsButtonHovered(_button, mode))
-	{
-		//TODO: fix the bug where you can actually see the previously rendered button when you hover and the button moves up.a
-		//Edit: fixing it causes it to constantly -2 and color change. Might need a coroutine or a state to check
-		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, (int)(cachedColor.s/1.1f), (int)(cachedColor.l/1.1f), 255));
-		_button.rectData.y -= 2;		//if only you could grab the stroke weight.. anyway, 2px also to hide the bug
-		CP_Settings_Stroke(GRAY);
-		DisplayButton(_button);
-	}
-	else
-	{
-		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
-	}
-	if (IsButtonClicked(_button, mode))
-	{
-		_button.buttEvent();
-		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, cachedColor.s / 2, cachedColor.l / 2, 255));
-		CP_Settings_Stroke(BLACK);
-		DisplayButton(_button);
-	}
-	else
-	{
-		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
-	}
-	//DisplayButton(_button);
-}
-
-void UpdateShapebutton(ShapeButton _button, CP_POSITION_MODE mode)
+void UpdateShapebutton(ShapeButton *_button)
 {
 	//Maybe next time add buttons to an array when created, then updatebutton just updates all buttons in the button array
 	//Requires dynamic arrays I think? 
-	//DisplayButton(_button);
-	DrawShape(_button.shape);
+	DisplayButton(_button);
 	//Hacky way to change the color of the button when pressed imo. 
-	CP_ColorHSL cachedColor = CP_ColorHSL_FromColor(PASTEL_ORANGE);
+	CP_ColorHSL cachedColor = CP_ColorHSL_FromColor(_button->cachedColor);
 
 	//Moving the button up when its hovered is a nice way to show it's being hovered without color.
-	if (IsShapeButtonHovered(_button, mode))
+	if (IsShapeButtonHovered(_button))
 	{
-		//TODO: fix the bug where you can actually see the previously rendered button when you hover and the button moves up.a
-		//Edit: fixing it causes it to constantly -2 and color change. Might need a coroutine or a state to check
-		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, (int)(cachedColor.s / 1.1f), (int)(cachedColor.l / 1.1f), 255));
-		_button.rectData.y -= 2;		//if only you could grab the stroke weight.. anyway, 2px also to hide the bug
+		//TODO: Fix the bug where the button spazzes out if you hover from below. 
+		//I think you probably need to check from the cached position.
+		_button->color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, (int)(cachedColor.s * 1.1f), (int)(cachedColor.l / 1.1f), 255));
+		_button->shape.transform.position.y =_button->cachedTransform.position.y - 3;		//if only you could grab the stroke weight.. anyway, 2px also to hide the bug
 		CP_Settings_Stroke(GRAY);
 		DisplayButton(_button);
+		//_button->shape.transform = _button->cachedTransform;
 	}
 	else
 	{
-		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
+		_button->shape.transform = _button->cachedTransform;
+		_button->color = CP_Color_FromColorHSL(cachedColor);
 	}
-	if (IsButtonClicked(_button, mode))
+	if (IsShapeButtonClicked(_button))
 	{
-		_button.buttEvent();
-		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, cachedColor.s / 2, cachedColor.l / 2, 255));
+		_button->buttEvent();
+		_button->color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, cachedColor.s / 2, cachedColor.l / 2, 255));
 		CP_Settings_Stroke(BLACK);
 		DisplayButton(_button);
 	}
 	else
 	{
-		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
+		_button->color = CP_Color_FromColorHSL(cachedColor);
 	}
 	//DisplayButton(_button);
 }
@@ -164,81 +169,101 @@ _Bool MouseInRectArea(RectArea rect, CP_POSITION_MODE mode)
 
 
 //Creates a button at the positions specified, and sets its size, text and color.
-Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color _color, ButtonEvent buttonFunction)
-{
-	Button newButton;
-	newButton.rectData = CreateRectArea(_x, _y, _sizeX, _sizeY);
-	newButton.rectData.color = _color;
-	newButton.text = text;
-	newButton.buttEvent = buttonFunction;
-	return newButton;
-}
+//Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color _color, ButtonEvent buttonFunction)
+//{
+//	Button newButton;
+//	newButton.rectData = CreateRectArea(_x, _y, _sizeX, _sizeY);
+//	newButton.rectData.color = _color;
+//	newButton.text = text;
+//	newButton.buttEvent = buttonFunction;
+//	return newButton;
+//}
 
-ShapeButton CreateShapeButton(Shape shape, const char* buttonText, ButtonEvent buttEvent) 
+ShapeButton CreateShapeButton(Shape shape, const char* buttonText,CP_Color color, ButtonEvent buttEvent) 
 {
 	ShapeButton newButton;
+	//for now
+	newButton.color = color;
 	newButton.shape = shape;
-	newButton.buttonText = buttonText;
+	newButton.text = buttonText;
 	newButton.buttEvent = buttEvent;
+	newButton.cachedTransform = shape.transform;
+	newButton.cachedColor = color;
 	return newButton;
 }
 
 
 //Displays Text in the Rect Area specified. Default alignment is in the center
 //Note: Font size is not set in this function
-void DisplayTextInRect(RectArea rect,const char *text)
+//void DisplayTextInRect(RectArea rect,const char *text)
+//{
+//	CP_Settings_TextAlignment(CP_TEXT_ALIGN_H_CENTER, CP_TEXT_ALIGN_V_MIDDLE);
+//	//Textbox pivots start from right to left
+//	CP_Font_DrawTextBox(text, rect.x - (float)(rect.sizeX / 2.f), rect.y, rect.sizeX);
+//}
+void DisplayTextInShape(Shape shape, const char* text)
 {
 	CP_Settings_TextAlignment(CP_TEXT_ALIGN_H_CENTER, CP_TEXT_ALIGN_V_MIDDLE);
+	if(shape.shape == SHAPE_ELLIPSE || shape.shape == SHAPE_RECTANGLE)
 	//Textbox pivots start from right to left
-	CP_Font_DrawTextBox(text, rect.x - (float)(rect.sizeX / 2.f), rect.y, rect.sizeX);
-}
+	CP_Font_DrawTextBox(text, shape.transform.position.x - (float)(shape.transform.size.x / 2.f), shape.transform.position.y, shape.transform.size.x);
+	if(shape.shape == SHAPE_CIRCLE)
+	CP_Font_DrawTextBox(text, shape.transform.position.x - (float)(shape.transform.size.x / 2.f), shape.transform.position.y- (float)(shape.transform.size.x / 2.f), shape.transform.size.x);
 
+}
 //Displays the button text, setting the color to the one specified.
 //Note: Default color is BLACK. (If BLACK doesn't exist, colortable.h is missing)
-void DisplayButtonText(Button _button,CP_Color _color)
+void DisplayButtonText(ShapeButton *_button,CP_Color _color)
 {
 	CP_Settings_Fill(_color); //Color for the font, not button
-	DisplayTextInRect(_button.rectData, _button.text);
+	DisplayTextInShape(_button->shape, _button->text);
+}
+void DisplayButton(ShapeButton *button)
+{
+	CP_Settings_Fill(button->color);
+	DisplayShape(button->shape);
+	DisplayButtonText(button, BLACK);
+	CP_Settings_NoStroke();
 }
 
 //Displays the Rect Area by using CProcessing's DrawRect, using the color specified.
 //Note: This function calls the CP_Settings_Fill function first before drawing the rect area
-void DisplayRect(RectArea rect)
-{
-	CP_Settings_Fill(rect.color);
-	CP_Graphics_DrawRect(rect.x, rect.y, rect.sizeX, rect.sizeY);
-}
+//void DisplayRect(RectArea rect)
+//{
+//	CP_Settings_Fill(rect.color);
+//	CP_Graphics_DrawRect(rect.x, rect.y, rect.sizeX, rect.sizeY);
+//}
 
 //Displays the Button and its text by calling DisplayRect and DisplayButtonText
-void DisplayButton(Button _button)
-{	//Default font color is black I guess
-	DisplayRect(_button.rectData);
-	DisplayButtonText(_button, BLACK);
-	CP_Settings_NoStroke();
-}
+//void DisplayButton(Button _button)
+//{	//Default font color is black I guess
+//	DisplayRect(_button.rectData);
+//	DisplayButtonText(_button, BLACK);
+//	CP_Settings_NoStroke();
+//}
 
-//Creates a new rect area at the specified position and sizes
-//Note: Default color is LIGHT_GRAY.  (If LIGHT_GRAY doesn't exist, colortable.h is missing)
-RectArea CreateRectArea(float _x, float _y, float _sizeX, float _sizeY)
-{
-	//Maybe use vectors next time??
-	RectArea newRect;
-	newRect.x = _x;
-	newRect.y = _y;
-	newRect.sizeX = _sizeX;
-	newRect.sizeY = _sizeY;
-	newRect.color = LIGHT_GRAY;
-	return newRect;
-}
-
-//Creates a rect area with specified position, size and color.
-RectArea CreateRectAreaWithColor(float _x, float _y, float _sizeX, float _sizeY,CP_Color _color)
-{
-	//Probably a redundant function. I just wanted to see if I could do function overloading.
-	RectArea newRect = CreateRectArea(_x, _y, _sizeX, _sizeY);
-	newRect.color = _color;
-	return newRect;
-}
+////Creates a new rect area at the specified position and sizes
+////Note: Default color is LIGHT_GRAY.  (If LIGHT_GRAY doesn't exist, colortable.h is missing)
+//RectArea CreateRectArea(float _x, float _y, float _sizeX, float _sizeY)
+//{
+//	//Maybe use vectors next time??
+//	RectArea newRect;
+//	newRect.x = _x;
+//	newRect.y = _y;
+//	newRect.sizeX = _sizeX;
+//	newRect.sizeY = _sizeY;
+//	newRect.color = LIGHT_GRAY;
+//	return newRect;
+//}
+//
+////Creates a rect area with specified position, size and color.
+//RectArea CreateRectAreaWithColor(float _x, float _y, float _sizeX, float _sizeY,CP_Color _color)
+//{
+//	//Probably a redundant function. I just wanted to see if I could do function overloading.
+//	RectArea newRect = CreateRectArea(_x, _y, _sizeX, _sizeY);
+//	newRect.color = _color;
+//	return newRect;
+//}
 
 //which apparently you can't overload functions :c
 
@@ -284,7 +309,8 @@ _Bool IsMouseInShapeArea(Shape shape)
 		case SHAPE_CIRCLE:
 
 			disMouseCircle = Vector_Distance_Squared(shape.transform.position, GetMousePosition());
-			return (disMouseCircle <= CP_Math_Square(shape.transform.size.x)) ? TRUE : FALSE;
+
+			return (disMouseCircle <= CP_Math_Square(shape.transform.size.x));
 
 			break;
 		case SHAPE_RECTANGLE:
@@ -301,7 +327,15 @@ _Bool IsMouseInShapeArea(Shape shape)
 				return FALSE;
 			}
 		}
+		case SHAPE_ELLIPSE:
+			//Formula is ((x-h)^2/(rx^2)+(y-k)^2/(ry^2)) Where:
+			//x,y = Mouse Position
+			//h,k = Ellipse Position
+			//rx,ry = ellipse Size
+			disMouseCircle = (CP_Math_Square(GetMousePosition().x - shape.transform.position.x) / (CP_Math_Square(shape.transform.size.x/2))) + (CP_Math_Square(GetMousePosition().y - shape.transform.position.y)/(CP_Math_Square(shape.transform.size.y/2)));
+			return (disMouseCircle < 1.f);	//if the dist < 1, true else > 1 false because out of the circle.
 			break;
+			
 		default:
 			return FALSE;
 
@@ -321,7 +355,7 @@ Shape CreateShape(float x, float y, float sizeX, float sizeY,float rotation, Sha
 	return newShape;
 }
 
-void DrawShape(Shape _shape)
+void DisplayShape(Shape _shape)
 {
 	switch (_shape.shape)
 	{
@@ -332,6 +366,7 @@ void DrawShape(Shape _shape)
 		CP_Graphics_DrawRectAdvanced(_shape.transform.position.x, _shape.transform.position.y, _shape.transform.size.x, _shape.transform.size.y, _shape.transform.rotation, 0);
 		break;
 	case SHAPE_ELLIPSE:
+		CP_Graphics_DrawEllipseAdvanced(_shape.transform.position.x, _shape.transform.position.y, _shape.transform.size.x, _shape.transform.size.y, _shape.transform.rotation);
 		break;
 	default:
 		break;

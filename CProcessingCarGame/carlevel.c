@@ -25,9 +25,9 @@ void Car_Level_Init()
 	CarC = CreateCar(250, 350, 50, LIGHT_PINK, 20,1.f);
 	selectedCar = &CarA;
 
-	QuitGamebutton = CreateButton(CP_System_GetWindowWidth() / 2.f, CP_System_GetWindowHeight() * 0.9f, 150, 50, "Quit Game", LIGHT_RED, ExitGame);
+	//QuitGamebutton = CreateButton(CP_System_GetWindowWidth() / 2.f, CP_System_GetWindowHeight() * 0.9f, 150, 50, "Quit Game", LIGHT_RED, ExitGame);
 
-	instructionsText = CreateRectArea(60, 20, 150, 50);
+	//instructionsText = CreateRectArea(60, 20, 150, 50);
 
 }
 
@@ -36,10 +36,10 @@ void Car_Level_Update()
 	UpdateCar(&CarA);
 	UpdateCar(&CarB);
 	UpdateCar(&CarC);
-	UpdateButton(QuitGamebutton,CP_POSITION_CENTER);
+	//UpdateButton(QuitGamebutton,CP_POSITION_CENTER);
 
 	CP_Settings_Fill(BLACK);
-	DisplayTextInRect(instructionsText, "WASD to move\n Space to brake \n Click to control");
+	//DisplayTextInRect(instructionsText, "WASD to move\n Space to brake \n Click to control");
 	/*
 	CP_Font_DrawText("WASD to move", 50, 50);
 	CP_Font_DrawText("Space to brake", 50, 60);

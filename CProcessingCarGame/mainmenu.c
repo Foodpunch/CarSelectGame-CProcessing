@@ -14,6 +14,13 @@ Button ReadFileButton;
 
 Shape testRect;
 Shape testCircle;
+Shape testEllipse;
+Shape testCircleEllipse;
+
+ShapeButton rectButton;
+ShapeButton circleButton;
+ShapeButton ellipseButton;
+ShapeButton circleEllipseButton;
 
 char *tempText = "Car Select Game";
 FILE* testFile;
@@ -22,13 +29,21 @@ void Main_Menu_Init()
 	CP_System_SetWindowSize(500, 500);
 	CP_Settings_RectMode(menuRectPosition);
 
-	StartGameButton = CreateButton(250, 150, 150, 50, "Start Game", LIGHT_BLUE,StartGame);
-	ExitGameButton = CreateButton(250, 250, 150, 50, "Exit Game", LIGHT_RED ,ExitGame);
-	TestButton = CreateButton(250, 350, 150, 50, "Test Button", PASTEL_GREEN2, TestFunction);
-	ReadFileButton = CreateButton(250, 450,150, 50, "Read text file", PASTEL_PINK, ReadFileFunction);
+	//StartGameButton = CreateButton(250, 150, 150, 50, "Start Game", LIGHT_BLUE,StartGame);
+	//ExitGameButton = CreateButton(250, 250, 150, 50, "Exit Game", LIGHT_RED ,ExitGame);
+	//TestButton = CreateButton(250, 350, 150, 50, "Test Button", PASTEL_GREEN2, TestFunction);
+	//ReadFileButton = CreateButton(250, 450,150, 50, "Read text file", PASTEL_PINK, ReadFileFunction);
 
-	testRect = CreateShape(100, 100, 100, 100, 0, SHAPE_RECTANGLE);
-	testCircle = CreateShape(100, 100, 15, 15, 0, SHAPE_CIRCLE);
+	testRect = CreateShape(250, 100, 150, 50, 0, SHAPE_RECTANGLE);
+	testCircle = CreateShape(250, 200, 40, 50, 0, SHAPE_CIRCLE);
+	testCircleEllipse = CreateShape(250, 300, 80, 80, 0, SHAPE_ELLIPSE);
+	testEllipse = CreateShape(250, 400, 150, 50, 0, SHAPE_ELLIPSE);
+
+	rectButton = CreateShapeButton(testRect, "rectangle button",LIGHT_BLUE, StartGame);
+	circleButton = CreateShapeButton(testCircle, "circle button",LIGHT_RED, StartGame);
+	ellipseButton = CreateShapeButton(testEllipse, "ellipse button",LIGHT_GREEN, StartGame);
+	circleEllipseButton = CreateShapeButton(testCircleEllipse, "circle ellipse button",LIGHT_YELLOW, StartGame);
+
 }
 
 void StartGame()
@@ -81,16 +96,25 @@ void ReadFileFunction()
 void Main_Menu_Update()
 {
 
-	UpdateButton(StartGameButton, menuRectPosition);
-	UpdateButton(ExitGameButton, menuRectPosition);
+	//UpdateButton(StartGameButton, menuRectPosition);
+	//UpdateButton(ExitGameButton, menuRectPosition);
 	//UpdateButton(TestButton, menuRectPosition);
 	//UpdateButton(ReadFileButton, menuRectPosition);
+	//CP_Settings_Stroke(BLACK);
+	//CP_Settings_Fill(LIGHT_RED);
+	UpdateShapebutton(&rectButton);
+	//DrawShape(testRect);
+	//CP_Settings_Fill(LIGHT_YELLOW);
+	UpdateShapebutton(&circleButton);
+	//DrawShape(testCircle);
+	//CP_Settings_Fill(LIGHT_ORANGE);
+	UpdateShapebutton(&ellipseButton);
+	//DrawShape(testEllipse);
+	//CP_Settings_Fill(LIGHT_GREEN);
+	UpdateShapebutton(&circleEllipseButton);
+	//DrawShape(testCircleEllipse);
 
-	CP_Settings_Fill(GREEN);
-	DrawShape(testRect);
-	CP_Settings_Fill(RED);
-	DrawShape(testCircle);
-
+	
 
 	CP_Font_DrawText(tempText, 250, 50);
 

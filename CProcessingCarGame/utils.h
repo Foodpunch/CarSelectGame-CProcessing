@@ -36,8 +36,6 @@ typedef struct Collider
 	Shape shape;
 	_Bool isTrigger;
 	ColliderEvent colliderEvent;
-
-
 }Collider;
 
 
@@ -61,12 +59,14 @@ typedef struct CircleArea
 
 typedef void(*ButtonEvent)(void);
 
+
 //Struct containing Rect Area and Text.
 typedef struct Button
 {
 	RectArea rectData;
 	char *text;		//Note: lol don't forget the pointer...
 	ButtonEvent buttEvent;
+
 	//imagine a world where I made enum states for the button... ENABLED,DISABLED,ACTIVE
 	//also imagine a world where buttons can be circles too and you can just check for button..
 	//Edit: button states would be really good...
@@ -75,10 +75,13 @@ typedef struct Button
 typedef struct ShapeButton
 {
 	Shape shape;
-	char* buttonText;
+	CP_Color color;
+	char* text;
 	ButtonEvent buttEvent;
-}ShapeButton;
-
+	Transform cachedTransform;
+	CP_Color cachedColor;		//feels so dirty to do this hmm...
+	//ShapeButton cachedButton; //I think this is not allowed because the size isn't defined yet? 
+} ShapeButton;
 
 //===============|| VECTOR DEFINES || =================================
 
@@ -92,22 +95,27 @@ typedef struct ShapeButton
 #define VECTOR_LEFT CP_Vector_Set(-1,0)
 
 Shape CreateShape(float x, float y, float sizeX, float sizeY,float rotation, ShapeType shapetype);
-ShapeButton CreateShapeButton(Shape shape, const char* buttonText, ButtonEvent buttEvent);
-void DrawShape(Shape shape);
+ShapeButton CreateShapeButton(Shape shape, const char* buttonText, CP_Color color, ButtonEvent buttEvent);
+void DisplayShape(Shape shape);
 _Bool IsMouseInShapeArea(Shape shape);
-void UpdateShapebutton(ShapeButton _button, CP_POSITION_MODE mode);
+_Bool IsShapeButtonClicked(ShapeButton *_button);
+_Bool IsShapeButtonHovered(ShapeButton *_button);
+void UpdateShapebutton(ShapeButton *_button);
+void DisplayTextInShape(Shape shape, const char* text);
+void DisplayButtonText(ShapeButton *_button, CP_Color _color);
+void DisplayButton(ShapeButton *_button);
 
 //===============|| RECT AREA FUNCTIONS || =============================
 
 //Creates a rectangular area at the position, size and color specified.
-RectArea CreateRectAreaWithColor(float _x, float _y, float _sizeX, float _sizeY, CP_Color _color);
+//RectArea CreateRectAreaWithColor(float _x, float _y, float _sizeX, float _sizeY, CP_Color _color);
 //Creates a rectangular area at the position and size specified.
-RectArea CreateRectArea(float x, float y, float sizeX, float sizeY);
+//RectArea CreateRectArea(float x, float y, float sizeX, float sizeY);
 //Displays text inside the rectangular area given. D
 //Note: alignment for text is defaulted to center v center h.
-void DisplayTextInRect(RectArea rect,const char *text);
+//void DisplayTextInRect(RectArea rect,const char *text);
 //Displays the rectangular area given
-void DisplayRect(RectArea rect);
+//void DisplayRect(RectArea rect);
 
 //===============|| CIRCLE AREA FUNCTIONS || =============================
 
@@ -121,17 +129,17 @@ CircleArea CreateCircleArea(float _x, float _y, float _diameter, CP_Color _color
 //===============|| BUTTON FUNCTIONS || =============================
 
 //Creates a button at the position, size and color specified, with the string as its name.
-Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color color, ButtonEvent buttEvent);
+//Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color color, ButtonEvent buttEvent);
 //Displays text inside the button at the font color specified.
-void DisplayButtonText(Button butt, CP_Color color);
+//void DisplayButtonText(Button butt, CP_Color color);
 //Displays the button specified.
-void DisplayButton(Button butt);
+//void DisplayButton(Button butt);
 //Checks if the button specified has been clicked.
 _Bool IsButtonClicked(Button _button, CP_POSITION_MODE mode);
 //Checks if mouse is hovering over button specified.
 _Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode);
 //Updates the button's graphic depending on if hovered or clicked. If clicked, it calls the function assigned to the button.
-void UpdateButton(Button _button, CP_POSITION_MODE mode);
+//void UpdateButton(Button _button, CP_POSITION_MODE mode);
 
 //===============|| UTILITY FUNCTIONS || =============================
 
