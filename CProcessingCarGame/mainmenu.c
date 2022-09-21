@@ -12,6 +12,9 @@ Button ExitGameButton;
 Button TestButton;
 Button ReadFileButton;
 
+Shape testRect;
+Shape testCircle;
+
 char *tempText = "Car Select Game";
 FILE* testFile;
 void Main_Menu_Init()
@@ -23,6 +26,9 @@ void Main_Menu_Init()
 	ExitGameButton = CreateButton(250, 250, 150, 50, "Exit Game", LIGHT_RED ,ExitGame);
 	TestButton = CreateButton(250, 350, 150, 50, "Test Button", PASTEL_GREEN2, TestFunction);
 	ReadFileButton = CreateButton(250, 450,150, 50, "Read text file", PASTEL_PINK, ReadFileFunction);
+
+	testRect = CreateShape(100, 100, 100, 100, 0, SHAPE_RECTANGLE);
+	testCircle = CreateShape(100, 100, 15, 15, 0, SHAPE_CIRCLE);
 }
 
 void StartGame()
@@ -79,6 +85,12 @@ void Main_Menu_Update()
 	UpdateButton(ExitGameButton, menuRectPosition);
 	//UpdateButton(TestButton, menuRectPosition);
 	//UpdateButton(ReadFileButton, menuRectPosition);
+
+	CP_Settings_Fill(GREEN);
+	DrawShape(testRect);
+	CP_Settings_Fill(RED);
+	DrawShape(testCircle);
+
 
 	CP_Font_DrawText(tempText, 250, 50);
 

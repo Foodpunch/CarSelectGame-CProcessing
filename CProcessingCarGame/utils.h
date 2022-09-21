@@ -3,6 +3,45 @@
 #include "cprocessing_common.h"
 #include <math.h>
 
+//Can probably rename this to gamecore
+
+typedef struct Transform
+{
+	CP_Vector position;
+	CP_Vector size;
+	float rotation;
+	//maybe include a pointer for another transform here for parent child stuff
+} Transform;
+
+typedef enum ShapeType
+{
+	SHAPE_RECTANGLE,
+	//ROUNDED RECTANGLE HERE NEXT TIME
+	SHAPE_CIRCLE,
+	SHAPE_TRIANGLE,
+	SHAPE_ELLIPSE
+} ShapeType;
+
+typedef struct Shape
+{
+	Transform transform;
+	ShapeType shape;
+}Shape;
+
+
+typedef void(*ColliderEvent)(void);
+
+typedef struct Collider
+{
+	Shape shape;
+	_Bool isTrigger;
+	ColliderEvent colliderEvent;
+
+
+}Collider;
+
+
+
 //Struct containing the 4 floats, corresponding to position x, position y, size x and size y and color 
 //to define a Rect Area. 
 //Can be used to create multiple Rect Areas of different colors and sizes
@@ -33,6 +72,14 @@ typedef struct Button
 	//Edit: button states would be really good...
 } Button;
 
+typedef struct ShapeButton
+{
+	Shape shape;
+	char* buttonText;
+	ButtonEvent buttEvent;
+}ShapeButton;
+
+
 //===============|| VECTOR DEFINES || =================================
 
 //VECTOR UP: (0,-1)
@@ -44,6 +91,11 @@ typedef struct Button
 //VECTOR LEFT: (-1,0)
 #define VECTOR_LEFT CP_Vector_Set(-1,0)
 
+Shape CreateShape(float x, float y, float sizeX, float sizeY,float rotation, ShapeType shapetype);
+ShapeButton CreateShapeButton(Shape shape, const char* buttonText, ButtonEvent buttEvent);
+void DrawShape(Shape shape);
+_Bool IsMouseInShapeArea(Shape shape);
+void UpdateShapebutton(ShapeButton _button, CP_POSITION_MODE mode);
 
 //===============|| RECT AREA FUNCTIONS || =============================
 

@@ -22,6 +22,10 @@ _Bool IsButtonClicked(Button _button, CP_POSITION_MODE mode)
 	}
 	else return FALSE;
 }
+_Bool IsShapeButtonHovered(ShapeButton _button)
+{
+	return IsMouseInShapeArea(_button.shape) ? TRUE : FALSE;
+}
 
 //Checks if button is being hovered over by the mouse using CProcessing's mouse inputs
 _Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode)
@@ -55,6 +59,43 @@ void UpdateButton(Button _button, CP_POSITION_MODE mode)
 		//TODO: fix the bug where you can actually see the previously rendered button when you hover and the button moves up.a
 		//Edit: fixing it causes it to constantly -2 and color change. Might need a coroutine or a state to check
 		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, (int)(cachedColor.s/1.1f), (int)(cachedColor.l/1.1f), 255));
+		_button.rectData.y -= 2;		//if only you could grab the stroke weight.. anyway, 2px also to hide the bug
+		CP_Settings_Stroke(GRAY);
+		DisplayButton(_button);
+	}
+	else
+	{
+		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
+	}
+	if (IsButtonClicked(_button, mode))
+	{
+		_button.buttEvent();
+		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, cachedColor.s / 2, cachedColor.l / 2, 255));
+		CP_Settings_Stroke(BLACK);
+		DisplayButton(_button);
+	}
+	else
+	{
+		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
+	}
+	//DisplayButton(_button);
+}
+
+void UpdateShapebutton(ShapeButton _button, CP_POSITION_MODE mode)
+{
+	//Maybe next time add buttons to an array when created, then updatebutton just updates all buttons in the button array
+	//Requires dynamic arrays I think? 
+	//DisplayButton(_button);
+	DrawShape(_button.shape);
+	//Hacky way to change the color of the button when pressed imo. 
+	CP_ColorHSL cachedColor = CP_ColorHSL_FromColor(PASTEL_ORANGE);
+
+	//Moving the button up when its hovered is a nice way to show it's being hovered without color.
+	if (IsShapeButtonHovered(_button, mode))
+	{
+		//TODO: fix the bug where you can actually see the previously rendered button when you hover and the button moves up.a
+		//Edit: fixing it causes it to constantly -2 and color change. Might need a coroutine or a state to check
+		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, (int)(cachedColor.s / 1.1f), (int)(cachedColor.l / 1.1f), 255));
 		_button.rectData.y -= 2;		//if only you could grab the stroke weight.. anyway, 2px also to hide the bug
 		CP_Settings_Stroke(GRAY);
 		DisplayButton(_button);
@@ -132,6 +173,16 @@ Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *t
 	newButton.buttEvent = buttonFunction;
 	return newButton;
 }
+
+ShapeButton CreateShapeButton(Shape shape, const char* buttonText, ButtonEvent buttEvent) 
+{
+	ShapeButton newButton;
+	newButton.shape = shape;
+	newButton.buttonText = buttonText;
+	newButton.buttEvent = buttEvent;
+	return newButton;
+}
+
 
 //Displays Text in the Rect Area specified. Default alignment is in the center
 //Note: Font size is not set in this function
@@ -221,6 +272,72 @@ _Bool IsMouseInCircleArea(CircleArea circleArea)
 	return (distMouseCircle <= circleRadiusSquared) ? TRUE:FALSE;
 }
 
+_Bool IsMouseInShapeArea(Shape shape)
+{
+	//Assuming the rect mode is set to center
+	float disMouseCircle;
+
+	_Bool IsWithinX_CENTERMODE;
+	_Bool IsWithinY_CENTERMODE;
+	switch (shape.shape)
+	{
+		case SHAPE_CIRCLE:
+
+			disMouseCircle = Vector_Distance_Squared(shape.transform.position, GetMousePosition());
+			return (disMouseCircle <= CP_Math_Square(shape.transform.size.x)) ? TRUE : FALSE;
+
+			break;
+		case SHAPE_RECTANGLE:
+		{	//since x is in the center of the button now, you need to add the size of X/2 to check right, and -size of X/2 to check left. 
+	//same for y axis (just in case anyone actually reads this lmao)
+			IsWithinX_CENTERMODE = (GetMousePosition().x >= shape.transform.position.x - (shape.transform.size.x / 2.f)) && ((GetMousePosition().x <= shape.transform.position.x + (shape.transform.size.x / 2.f)));
+			IsWithinY_CENTERMODE = (GetMousePosition().y >= shape.transform.position.y - (shape.transform.size.y / 2.f)) && ((GetMousePosition().y <= shape.transform.position.y + (shape.transform.size.y / 2.f)));
+			if (IsWithinX_CENTERMODE && IsWithinY_CENTERMODE)
+			{
+				return TRUE;
+			}
+			else
+			{
+				return FALSE;
+			}
+		}
+			break;
+		default:
+			return FALSE;
+
+	}
+}
+
+
+Shape CreateShape(float x, float y, float sizeX, float sizeY,float rotation, ShapeType shapetype)
+{
+	Shape newShape;
+	newShape.transform.position.x = x;
+	newShape.transform.position.y = y;
+	newShape.transform.size.x = sizeX;
+	newShape.transform.size.y = sizeY;
+	newShape.transform.rotation = rotation;
+	newShape.shape = shapetype;
+	return newShape;
+}
+
+void DrawShape(Shape _shape)
+{
+	switch (_shape.shape)
+	{
+	case SHAPE_CIRCLE:
+		CP_Graphics_DrawCircle(_shape.transform.position.x, _shape.transform.position.y, _shape.transform.size.x * 2);
+		break;
+	case SHAPE_RECTANGLE:
+		CP_Graphics_DrawRectAdvanced(_shape.transform.position.x, _shape.transform.position.y, _shape.transform.size.x, _shape.transform.size.y, _shape.transform.rotation, 0);
+		break;
+	case SHAPE_ELLIPSE:
+		break;
+	default:
+		break;
+	}
+}
+
 //Returns the distance squared between 2 vectors (value is abs)
 float Vector_Distance_Squared(CP_Vector a, CP_Vector b)
 {
@@ -237,6 +354,7 @@ _Bool IsCircleClicked(CircleArea _circle)
 	}
 	else return FALSE;
 }
+
 
 
 
