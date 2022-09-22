@@ -65,19 +65,6 @@ typedef struct CircleArea
 
 typedef void(*ButtonEvent)(void);
 
-
-////Struct containing Rect Area and Text.
-//typedef struct Button
-//{
-//	RectArea rectData;
-//	char *text;		//Note: lol don't forget the pointer...
-//	ButtonEvent buttEvent;
-//
-//	//imagine a world where I made enum states for the button... ENABLED,DISABLED,ACTIVE
-//	//also imagine a world where buttons can be circles too and you can just check for button..
-//	//Edit: button states would be really good...
-//} Button;
-
 typedef struct Button
 {
 	Shape shape;
@@ -121,44 +108,14 @@ _Bool IsShapeButtonHovered(Button *_button);
 void UpdateShapebutton(Button *_button);
 void DisplayTextInShape(Shape shape, const char* text);
 void DisplayButtonText(Button *_button, CP_Color _color);
+void DisplayButton(Button *_button);
 void UpdateGUI(void);
-//===============|| RECT AREA FUNCTIONS || =============================
 
-//Creates a rectangular area at the position, size and color specified.
-//RectArea CreateRectAreaWithColor(float _x, float _y, float _sizeX, float _sizeY, CP_Color _color);
-//Creates a rectangular area at the position and size specified.
-//RectArea CreateRectArea(float x, float y, float sizeX, float sizeY);
-//Displays text inside the rectangular area given. D
-//Note: alignment for text is defaulted to center v center h.
-//void DisplayTextInRect(RectArea rect,const char *text);
-//Displays the rectangular area given
-//void DisplayRect(RectArea rect);
-
-
-//===============|| BUTTON FUNCTIONS || =============================
-
-//Creates a button at the position, size and color specified, with the string as its name.
-//Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color color, ButtonEvent buttEvent);
-//Displays text inside the button at the font color specified.
-//void DisplayButtonText(Button butt, CP_Color color);
-//Displays the button specified.
-//void DisplayButton(Button butt);
-//Checks if the button specified has been clicked.
-//_Bool IsButtonClicked(Button _button, CP_POSITION_MODE mode);
-//Checks if mouse is hovering over button specified.
-//_Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode);
-//Updates the button's graphic depending on if hovered or clicked. If clicked, it calls the function assigned to the button.
-//void UpdateButton(Button _button, CP_POSITION_MODE mode);
 
 //===============|| UTILITY FUNCTIONS || =============================
 
 //Gets Mouse Position
 CP_Vector GetMousePosition();
-
-//Checks if an area specified has been clicked.
-//_Bool MouseInRectArea(RectArea rect, CP_POSITION_MODE mode);
-//int IsAreaClicked(float area_center_x, float area_center_y, float area_width, float area_height, float click_x, float click_y);
-
 //Returns the absolute value of a float
 float fAbs(float f);
 //Returns the squared distance between two vectors

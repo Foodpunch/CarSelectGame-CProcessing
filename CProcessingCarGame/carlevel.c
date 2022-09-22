@@ -18,14 +18,11 @@ BCar BCar2;
 BCar BCar3;
 BCar* selectedBCar;
 
-//RectArea instructionsText;
+Shape instructionsText;
 
 void Car_Level_Init()
 {
 	CP_System_SetWindowSize(500, 500);
-	//CarA = CreateCar(250, 150, 50, LIGHT_PURPLE,20,2.0f);
-	//CarB = CreateCar(250, 250, 50, LIGHT_ORANGE, 15,1.5f);
-	//CarC = CreateCar(250, 350, 50, LIGHT_PINK, 20,1.f);
 
 	BCar1 = CreateBCar(250, 150, 25, LIGHT_RED, 20, 2.0f);
 	BCar2 = CreateBCar(250, 250, 50, LIGHT_GREEN, 15, 1.5f);
