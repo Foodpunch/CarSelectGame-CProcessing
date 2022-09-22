@@ -7,20 +7,15 @@
 
 CP_POSITION_MODE menuRectPosition = CP_POSITION_CENTER;
 
-Button StartGameButton;
-Button ExitGameButton;
-Button TestButton;
-Button ReadFileButton;
+//Shape testRect;
+//Shape testCircle;
+//Shape testEllipse;
+//Shape testCircleEllipse;
 
-Shape testRect;
-Shape testCircle;
-Shape testEllipse;
-Shape testCircleEllipse;
-
-ShapeButton rectButton;
-ShapeButton circleButton;
-ShapeButton ellipseButton;
-ShapeButton circleEllipseButton;
+Button rectButton;
+Button circleButton;
+Button ellipseButton;
+Button circleEllipseButton;
 
 char *tempText = "Car Select Game";
 FILE* testFile;
@@ -30,20 +25,11 @@ void Main_Menu_Init()
 	CP_System_SetWindowSize(500, 500);
 	CP_Settings_RectMode(menuRectPosition);
 
-	//StartGameButton = CreateButton(250, 150, 150, 50, "Start Game", LIGHT_BLUE,StartGame);
-	//ExitGameButton = CreateButton(250, 250, 150, 50, "Exit Game", LIGHT_RED ,ExitGame);
-	//TestButton = CreateButton(250, 350, 150, 50, "Test Button", PASTEL_GREEN2, TestFunction);
-	//ReadFileButton = CreateButton(250, 450,150, 50, "Read text file", PASTEL_PINK, ReadFileFunction);
 
-	testRect = CreateShape(250, 100, 150, 50, 0, SHAPE_RECTANGLE);
-	testCircle = CreateShape(250, 200, 40, 50, 0, SHAPE_CIRCLE);
-	testCircleEllipse = CreateShape(250, 300, 80, 80, 0, SHAPE_ELLIPSE);
-	testEllipse = CreateShape(250, 400, 150, 50, 0, SHAPE_ELLIPSE);
-
-	rectButton = CreateShapeButton(testRect, "rectangle button",LIGHT_BLUE, StartGame);
-	circleButton = CreateShapeButton(testCircle, "circle button",LIGHT_RED, StartGame);
-	ellipseButton = CreateShapeButton(testEllipse, "ellipse button",LIGHT_GREEN, StartGame);
-	circleEllipseButton = CreateShapeButton(testCircleEllipse, "circle ellipse button",LIGHT_YELLOW, RandomNoise);
+	rectButton = CreateButton(250, 100, 150, 50, SHAPE_RECTANGLE, "Rect Button", LIGHT_BLUE, StartGame);
+	rectButton = CreateButton(250, 200, 40, 40, SHAPE_CIRCLE, "Circle Button", LIGHT_RED, StartGame);
+	rectButton = CreateButton(250, 300, 80, 80, SHAPE_ELLIPSE, "circle ellipse Button", LIGHT_GREEN, StartGame);
+	rectButton = CreateButton(250, 400, 150, 50, SHAPE_ELLIPSE, "Ellipse Button", LIGHT_YELLOW, RandomNoise);
 
 }
 
@@ -91,10 +77,6 @@ void ReadFileFunction()
 
 		fclose(testFile);
 	}
-	
-		
-	// close the file
-	
 
 }
 
@@ -103,7 +85,7 @@ void Main_Menu_Update()
 {
 
 
-	UpdateCameraShaker();
+
 	UpdateGUI();
 	
 	CP_Font_DrawText(buffer2, 250, 50);

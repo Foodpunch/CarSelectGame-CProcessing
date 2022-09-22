@@ -28,17 +28,23 @@ typedef struct Shape
 	ShapeType shape;
 }Shape;
 
-
 typedef void(*ColliderEvent)(void);
 
 typedef struct Collider
 {
 	Shape shape;
 	_Bool isTrigger;
+	int colliderLayer;
 	ColliderEvent colliderEvent;
 }Collider;
 
-
+typedef struct RigidBody2D
+{
+	CP_Vector velocity;
+	float mass;
+	float gravityScale;
+	//maybe need to do the constraints here too?
+}RigidBody2D;
 
 //Struct containing the 4 floats, corresponding to position x, position y, size x and size y and color 
 //to define a Rect Area. 
@@ -60,19 +66,19 @@ typedef struct CircleArea
 typedef void(*ButtonEvent)(void);
 
 
-//Struct containing Rect Area and Text.
+////Struct containing Rect Area and Text.
+//typedef struct Button
+//{
+//	RectArea rectData;
+//	char *text;		//Note: lol don't forget the pointer...
+//	ButtonEvent buttEvent;
+//
+//	//imagine a world where I made enum states for the button... ENABLED,DISABLED,ACTIVE
+//	//also imagine a world where buttons can be circles too and you can just check for button..
+//	//Edit: button states would be really good...
+//} Button;
+
 typedef struct Button
-{
-	RectArea rectData;
-	char *text;		//Note: lol don't forget the pointer...
-	ButtonEvent buttEvent;
-
-	//imagine a world where I made enum states for the button... ENABLED,DISABLED,ACTIVE
-	//also imagine a world where buttons can be circles too and you can just check for button..
-	//Edit: button states would be really good...
-} Button;
-
-typedef struct ShapeButton
 {
 	Shape shape;
 	CP_Color color;
@@ -81,7 +87,7 @@ typedef struct ShapeButton
 	Transform cachedTransform;
 	CP_Color cachedColor;		//feels so dirty to do this hmm...
 	//ShapeButton cachedButton; //I think this is not allowed because the size isn't defined yet? 
-} ShapeButton;
+} Button;
 
 //===============|| VECTOR DEFINES || =================================
 
@@ -94,16 +100,27 @@ typedef struct ShapeButton
 //VECTOR LEFT: (-1,0)
 #define VECTOR_LEFT CP_Vector_Set(-1,0)
 
+//============|| PHYSICS STUFF ||========================================
+RigidBody2D CreateRigidBody(Collider collider, float mass, float gravityScale);
+Collider CreateCollider(Shape shape, _Bool isTrigger);
+void OnCollisionEnter(void);
+
+
+
+
+//=============|| GUI && BUTTON STUFF ||=================================
+
 Shape CreateShape(float x, float y, float sizeX, float sizeY,float rotation, ShapeType shapetype);
-ShapeButton CreateShapeButton(Shape shape, const char* buttonText, CP_Color color, ButtonEvent buttEvent);
+Button CreateButton(float x, float y, float sizeX, float sizeY, ShapeType shapeType, const char* text, CP_Color color, ButtonEvent buttEvent);
+Button CreateShapeButton(Shape shape, const char* buttonText, CP_Color color, ButtonEvent buttEvent);
 void DisplayShape(Shape shape);
 _Bool IsMouseInShapeArea(Shape shape);
-_Bool IsShapeButtonClicked(ShapeButton *_button);
-_Bool IsShapeButtonHovered(ShapeButton *_button);
-void UpdateShapebutton(ShapeButton *_button);
+_Bool IsMouseClickedShapeArea(Shape shape);
+_Bool IsShapeButtonClicked(Button *_button);
+_Bool IsShapeButtonHovered(Button *_button);
+void UpdateShapebutton(Button *_button);
 void DisplayTextInShape(Shape shape, const char* text);
-void DisplayButtonText(ShapeButton *_button, CP_Color _color);
-void DisplayButton(ShapeButton *_button);
+void DisplayButtonText(Button *_button, CP_Color _color);
 void UpdateGUI(void);
 //===============|| RECT AREA FUNCTIONS || =============================
 
@@ -116,14 +133,6 @@ void UpdateGUI(void);
 //void DisplayTextInRect(RectArea rect,const char *text);
 //Displays the rectangular area given
 //void DisplayRect(RectArea rect);
-
-//===============|| CIRCLE AREA FUNCTIONS || =============================
-
-_Bool IsCircleClicked(CircleArea _circle);
-_Bool IsMouseInCircleArea(CircleArea circleArea);
-void DisplayCircle(CircleArea _circle);
-CircleArea CreateCircleArea(float _x, float _y, float _diameter, CP_Color _color);
-
 
 
 //===============|| BUTTON FUNCTIONS || =============================
@@ -156,7 +165,7 @@ float fAbs(float f);
 float Vector_Distance_Squared(CP_Vector a, CP_Vector b);
 //[DEPRECATED] Returns a point in the circumference of a circle. 
 //Note: 0 degrees is center of circle + radius. Increasing the angle returns a point in the clockwise direction.
-CP_Vector PointInCircle(CircleArea circle, float angleInDeg);
+CP_Vector PointInCircle(Shape circle, float angleInDeg);
 //Returns the angle to vector. [NOT IMPLEMENTED YET]
 union CP_Vector AngleToVector(float radian_angle);
 //Draws a triangle with the 3 points specified. The triangle is then rotated by the degrees specified.
@@ -165,7 +174,7 @@ void DrawTriangleAdvanced(CP_Vector a, CP_Vector b, CP_Vector c, float deg);
 CP_Vector RotateVectorByAngle(CP_Vector vector, float angleInDeg);
 //Returns a point in the circumference of a circle. 
 //Note: 0 degrees is center of circle + radius. Increasing the angle returns a point in the clockwise direction.
-CP_Vector GetPointInCircle(CircleArea circle, float angleInDeg);
+CP_Vector GetPointInCircle(Shape shape, float angleInDeg);
 //returns the reflected vector normalised
 CP_Vector Reflect(CP_Vector direction, CP_Vector normal);
 float PerlinNoise(int x, int y);	

@@ -9,186 +9,17 @@
 
 //Button buffer? GUI Buffer?? Not sure what this should be called. 
 //Feels like it should be an array of all GUI objects...
-ShapeButton ButtonArray[100];
+Button ButtonArray[100];
 int buttonIndex = 0;		//index for the buttons. Used when creating and when updating
-
-
-//Gets the mouse input X and Y from CProcessing and puts them into a vector
-CP_Vector GetMousePosition()
-{
-	return CP_Vector_Set(CP_Input_GetMouseX(), CP_Input_GetMouseY());
-}
-
-
-_Bool IsShapeButtonHovered(ShapeButton *_button)
-{
-	return IsMouseInShapeArea(_button->shape);
-}
-
-_Bool IsShapeButtonClicked(ShapeButton *_button)
-{
-	return(CP_Input_MouseDown(MOUSE_BUTTON_LEFT) && IsShapeButtonHovered(_button));
-}
+//TODO: What happens when buttons are destroyed? Or like need to remove from memory. hmm...
+//Can I just save over? Or just --index..
 
 
 
-#pragma region Delete this later
-//Updates the button if it has been clicked, changing it's color by halving saturation and luminosity and adding a BLACK stroke
-//Also calls the function in the button
-//void UpdateButton(Button _button, CP_POSITION_MODE mode)
-//{	
-//	//Maybe next time add buttons to an array when created, then updatebutton just updates all buttons in the button array
-//	//Requires dynamic arrays I think? 
-//	DisplayButton(_button);
-//
-//	//Hacky way to change the color of the button when pressed imo. 
-//	CP_ColorHSL cachedColor = CP_ColorHSL_FromColor(_button.rectData.color);
-//	
-//	//Moving the button up when its hovered is a nice way to show it's being hovered without color.
-//	if (IsButtonHovered(_button, mode))
-//	{
-//		//TODO: fix the bug where you can actually see the previously rendered button when you hover and the button moves up.a
-//		//Edit: fixing it causes it to constantly -2 and color change. Might need a coroutine or a state to check
-//		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, (int)(cachedColor.s/1.1f), (int)(cachedColor.l/1.1f), 255));
-//		_button.rectData.y -= 2;		//if only you could grab the stroke weight.. anyway, 2px also to hide the bug
-//		CP_Settings_Stroke(GRAY);
-//		DisplayButton(_button);
-//	}
-//	else
-//	{
-//		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
-//	}
-//	if (IsButtonClicked(_button, mode))
-//	{
-//		_button.buttEvent();
-//		_button.rectData.color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, cachedColor.s / 2, cachedColor.l / 2, 255));
-//		CP_Settings_Stroke(BLACK);
-//		DisplayButton(_button);
-//	}
-//	else
-//	{
-//		_button.rectData.color = CP_Color_FromColorHSL(cachedColor);
-//	}
-//	//DisplayButton(_button);
-//}
-
-//Creates a button at the positions specified, and sets its size, text and color.
-//Button CreateButton(float _x, float _y, float _sizeX, float _sizeY,const char *text, CP_Color _color, ButtonEvent buttonFunction)
-//{
-//	Button newButton;
-//	newButton.rectData = CreateRectArea(_x, _y, _sizeX, _sizeY);
-//	newButton.rectData.color = _color;
-//	newButton.text = text;
-//	newButton.buttEvent = buttonFunction;
-//	return newButton;
-//}
-
-//Displays Text in the Rect Area specified. Default alignment is in the center
-//Note: Font size is not set in this function
-//void DisplayTextInRect(RectArea rect,const char *text)
-//{
-//	CP_Settings_TextAlignment(CP_TEXT_ALIGN_H_CENTER, CP_TEXT_ALIGN_V_MIDDLE);
-//	//Textbox pivots start from right to left
-//	CP_Font_DrawTextBox(text, rect.x - (float)(rect.sizeX / 2.f), rect.y, rect.sizeX);
-//}
-//Displays the Rect Area by using CProcessing's DrawRect, using the color specified.
-//Note: This function calls the CP_Settings_Fill function first before drawing the rect area
-//void DisplayRect(RectArea rect)
-//{
-//	CP_Settings_Fill(rect.color);
-//	CP_Graphics_DrawRect(rect.x, rect.y, rect.sizeX, rect.sizeY);
-//}
-
-//Displays the Button and its text by calling DisplayRect and DisplayButtonText
-//void DisplayButton(Button _button)
-//{	//Default font color is black I guess
-//	DisplayRect(_button.rectData);
-//	DisplayButtonText(_button, BLACK);
-//	CP_Settings_NoStroke();
-//}
-
-////Creates a new rect area at the specified position and sizes
-////Note: Default color is LIGHT_GRAY.  (If LIGHT_GRAY doesn't exist, colortable.h is missing)
-//RectArea CreateRectArea(float _x, float _y, float _sizeX, float _sizeY)
-//{
-//	//Maybe use vectors next time??
-//	RectArea newRect;
-//	newRect.x = _x;
-//	newRect.y = _y;
-//	newRect.sizeX = _sizeX;
-//	newRect.sizeY = _sizeY;
-//	newRect.color = LIGHT_GRAY;
-//	return newRect;
-//}
-//
-////Creates a rect area with specified position, size and color.
-//RectArea CreateRectAreaWithColor(float _x, float _y, float _sizeX, float _sizeY,CP_Color _color)
-//{
-//	//Probably a redundant function. I just wanted to see if I could do function overloading.
-//	RectArea newRect = CreateRectArea(_x, _y, _sizeX, _sizeY);
-//	newRect.color = _color;
-//	return newRect;
-//}
-//Checks if button has been clicked, uses CProcessing's mouse inputs
-//_Bool IsButtonClicked(Button _button, CP_POSITION_MODE mode)
-//{
-//	if (CP_Input_MouseDown(MOUSE_BUTTON_LEFT) && IsButtonHovered(_button,mode))
-//	{
-//		return TRUE;
-//	}
-//	else return FALSE;
-//}
-////Checks if the mouse position is within the rect area
-//_Bool MouseInRectArea(RectArea rect, CP_POSITION_MODE mode)
-//{
-//	//Might not be correct to do this here but I'm testing
-//	if (mode == CP_POSITION_CORNER) //By default we use center ba..
-//	{	//simple checking of bounds
-//		_Bool IsWithinX_CORNERMODE = (GetMousePosition().x >= rect.x) && (GetMousePosition().x <= (rect.x + rect.sizeX));
-//		_Bool IsWithinY_CORNERMODE = (GetMousePosition().y >= rect.y) && (GetMousePosition().y <= (rect.y + rect.sizeY));
-//		if (IsWithinX_CORNERMODE && IsWithinY_CORNERMODE)
-//		{
-//			return TRUE;
-//		}
-//		else
-//		{
-//			return FALSE;
-//		}
-//	}
-//	else if (mode == CP_POSITION_CENTER)
-//	{	//since x is in the center of the button now, you need to add the size of X/2 to check right, and -size of X/2 to check left. 
-//		//same for y axis (just in case anyone actually reads this lmao)
-//		_Bool IsWithinX_CENTERMODE = (GetMousePosition().x >= rect.x - (rect.sizeX / 2.f)) && ((GetMousePosition().x <= rect.x + (rect.sizeX / 2.f)));
-//		_Bool IsWithinY_CENTERMODE = (GetMousePosition().y >= rect.y - (rect.sizeY / 2.f)) && ((GetMousePosition().y <= rect.y + (rect.sizeY / 2.f)));
-//		if (IsWithinX_CENTERMODE && IsWithinY_CENTERMODE)
-//		{
-//			return TRUE;
-//		}
-//		else
-//		{
-//			return FALSE;
-//		}
-//	}
-//	//probably should do a debug.log error here? idk
-//	return FALSE;
-//}
-//Checks if button is being hovered over by the mouse using CProcessing's mouse inputs
-//_Bool IsButtonHovered(Button _button, CP_POSITION_MODE mode)
-//{
-//	if (MouseInRectArea(_button.rectData, mode))
-//	{
-//
-//		return TRUE;
-//	}
-//	else
-//	{
-//		return FALSE;
-//	}
-//}
-#pragma endregion
 
 
-void UpdateShapebutton(ShapeButton *_button)
+//################################# || GUI BUTTON STUFF || ############################################################
+void UpdateShapebutton(Button *_button)
 {
 	DisplayButton(_button);
 
@@ -196,7 +27,7 @@ void UpdateShapebutton(ShapeButton *_button)
 	CP_ColorHSL cachedColor = CP_ColorHSL_FromColor(_button->cachedColor);
 
 	//Moving the button up when its hovered is a nice way to show it's being hovered without color.
-	if (IsShapeButtonHovered(_button))
+	if (IsMouseInShapeArea(_button->shape))
 	{
 		//TODO: Fix the bug where the button spazzes out if you hover from below. 
 		//I think you probably need to check from the cached position.
@@ -212,7 +43,7 @@ void UpdateShapebutton(ShapeButton *_button)
 		_button->shape.transform = _button->cachedTransform;
 		_button->color = CP_Color_FromColorHSL(cachedColor);
 	}
-	if (IsShapeButtonClicked(_button))
+	if (IsMouseClickedShapeArea(_button->shape))
 	{
 		_button->buttEvent();
 		_button->color = CP_Color_FromColorHSL(CP_ColorHSL_Create(cachedColor.h, cachedColor.s / 2, cachedColor.l / 2, 255));
@@ -226,22 +57,17 @@ void UpdateShapebutton(ShapeButton *_button)
 }
 
 
-
-
-
-
-
 //Wrapper for some reason. I feel like this is correct? but at the same time it feels redundant
-//I think I need to have an updatebutton function somewhere in here to constantly update all buttons.
-//Maybe store them in some array and have it just call one UpdateGUI(); much like in unity.
 //The settings in the UI can also be split and refined more.
 
-
-
-
-ShapeButton CreateShapeButton(Shape shape, const char* buttonText,CP_Color color, ButtonEvent buttEvent) 
+Button CreateButton(float x, float y, float sizeX, float sizeY, ShapeType shapeType, const char* text, CP_Color color,ButtonEvent buttevent)
 {
-	ShapeButton newButton;
+	return CreateShapeButton(CreateShape(x, y, sizeX, sizeY, 0, shapeType), text, color, buttevent);
+}
+
+Button CreateShapeButton(Shape shape, const char* buttonText,CP_Color color, ButtonEvent buttEvent) 
+{
+	Button newButton;
 	//for now
 	newButton.color = color;
 	newButton.shape = shape;
@@ -257,8 +83,20 @@ ShapeButton CreateShapeButton(Shape shape, const char* buttonText,CP_Color color
 	return newButton;
 }
 
+_Bool IsShapeButtonHovered(Button* _button)
+{
+	return IsMouseInShapeArea(_button->shape);
+}
+
+_Bool IsShapeButtonClicked(Button* _button)
+{
+	return(CP_Input_MouseDown(MOUSE_BUTTON_LEFT) && IsShapeButtonHovered(_button));
+}
+
 void UpdateGUI()
 {
+	UpdateCameraShaker();
+	if (buttonIndex == 0) return;
 	for (short i = 0; i < buttonIndex; ++i)
 	{
 		UpdateShapebutton(&ButtonArray[i]);
@@ -277,12 +115,12 @@ void DisplayTextInShape(Shape shape, const char* text)
 }
 //Displays the button text, setting the color to the one specified.
 //Note: Default color is BLACK. (If BLACK doesn't exist, colortable.h is missing)
-void DisplayButtonText(ShapeButton *_button,CP_Color _color)
+void DisplayButtonText(Button *_button,CP_Color _color)
 {
 	CP_Settings_Fill(_color); //Color for the font, not button
 	DisplayTextInShape(_button->shape, _button->text);
 }
-void DisplayButton(ShapeButton *button)
+void DisplayButton(Button *button)
 {
 	CP_Settings_Fill(button->color);
 	DisplayShape(button->shape);
@@ -295,33 +133,9 @@ void DisplayButton(ShapeButton *button)
 //which apparently you can't overload functions :c
 
 
-//Creates a circle area with specified position, diameter and color
-CircleArea CreateCircleArea(float _x, float _y, float _diameter, CP_Color _color)
+_Bool IsMouseClickedShapeArea(Shape shape)
 {
-	CircleArea newCircle;
-	newCircle.x = _x;
-	newCircle.y = _y;
-	newCircle.diameter = _diameter;
-	newCircle.color = _color;
-	return newCircle;
-}
-
-//Displays the circle with the given circle area data.
-void DisplayCircle(CircleArea _circle)
-{
-	CP_Settings_Fill(_circle.color);
-	CP_Graphics_DrawCircle(_circle.x, _circle.y, _circle.diameter);
-}
-
-//Checks if the mouse is within the circle area specied
-//Note: this uses distance squared.
-_Bool IsMouseInCircleArea(CircleArea circleArea)
-{
-	CP_Vector CirclePos = CP_Vector_Set(circleArea.x, circleArea.y);
-	float distMouseCircle = Vector_Distance_Squared(CirclePos,GetMousePosition());
-	float circleRadiusSquared = CP_Math_Square(circleArea.diameter / 2);
-
-	return (distMouseCircle <= circleRadiusSquared) ? TRUE:FALSE;
+	return IsMouseInShapeArea(shape) && CP_Input_MouseDown(MOUSE_BUTTON_LEFT);
 }
 
 _Bool IsMouseInShapeArea(Shape shape)
@@ -400,25 +214,47 @@ void DisplayShape(Shape _shape)
 	}
 }
 
+
+//##############################|| PHYSICS STUFF || #####################################################################
+RigidBody2D CreateRigidBody(Collider collider, float mass, float gravityScale)
+{
+	RigidBody2D _rb;
+	_rb.mass = mass;
+	_rb.gravityScale = gravityScale;
+	_rb.velocity = CP_Vector_Zero();
+	return _rb;
+}
+
+Collider CreateCollider(Shape shape, _Bool isTrigger)
+{
+	Collider newCollider;
+	newCollider.shape = shape;
+	newCollider.colliderEvent = OnCollisionEnter;		
+	newCollider.isTrigger = isTrigger;
+	return newCollider;
+}
+
+
+void OnCollisionEnter()
+{
+
+}
+
+
+//##############################|| MATHS AND HELPER FUNCTIONS ||##########################################################
+
+//Gets the mouse input X and Y from CProcessing and puts them into a vector
+CP_Vector GetMousePosition()
+{
+	return CP_Vector_Set(CP_Input_GetMouseX(), CP_Input_GetMouseY());
+}
+
 //Returns the distance squared between 2 vectors (value is abs)
 float Vector_Distance_Squared(CP_Vector a, CP_Vector b)
 {
 	float distSquared = (CP_Math_Square((b.x - a.x)) + CP_Math_Square((b.y - a.y)));
 	return fAbs(distSquared);
 }
-
-//Checks if the mouse left click down on circle area specified
-_Bool IsCircleClicked(CircleArea _circle)
-{
-	if (CP_Input_MouseDown(MOUSE_BUTTON_LEFT) && IsMouseInCircleArea(_circle))
-	{
-		return TRUE;
-	}
-	else return FALSE;
-}
-
-
-
 
 CP_Vector AngleToVector(float radian_angle)
 {
@@ -439,7 +275,7 @@ float fAbs(float f)
 
 //Returns a point in a circle area at angleInDeg away from VECTOR_RIGHT of the circle.
 //Note: this function is not used anymore, it's outdated
-CP_Vector PointInCircle(CircleArea circle, float angleInDeg)
+CP_Vector PointInCircle(Shape shape, float angleInDeg)
 {	//Assuming (1,0) in the circle is 0deg, rotates clockwise (note, origin is top left so it is clockwise)
 	CP_Vector startV = VECTOR_RIGHT;
 	
@@ -447,16 +283,16 @@ CP_Vector PointInCircle(CircleArea circle, float angleInDeg)
 	float angleInRadians = CP_Math_Radians(angleInDeg);
 	float x2 = (startV.x * cosf(angleInRadians)) - ((startV.y) * (sinf(angleInRadians)));
 	float y2 = (startV.x * sinf(angleInRadians))+((startV.y)*(cosf(angleInRadians)));
-	CP_Vector resultingVector = CP_Vector_Set((x2 * (circle.diameter / 2.f)+circle.x), (y2 * (circle.diameter/2.f)+circle.y));
+	CP_Vector resultingVector = CP_Vector_Set((x2 * (shape.transform.size.x)+shape.transform.position.x), (y2 * (shape.transform.size.x)+shape.transform.position.y));
 	return resultingVector;
 }
 
 //Gets a point in the circle that is angleInDeg away from VECTOR_RIGHT
 //Note: Increasing the angle returns a point in the clockwise direction from VECTOR_RIGHT
-CP_Vector GetPointInCircle(CircleArea circle, float angleInDeg)
+CP_Vector GetPointInCircle(Shape shape, float angleInDeg)
 {
-	CP_Vector circlePos = CP_Vector_Set(circle.x, circle.y);
-	CP_Vector startV = CP_Vector_Set(circle.diameter/2, 0);
+	CP_Vector circlePos = CP_Vector_Set(shape.transform.position.x, shape.transform.position.y);
+	CP_Vector startV = CP_Vector_Set(shape.transform.size.x, 0);
 	CP_Vector result = RotateVectorByAngle(startV, angleInDeg);
 	return CP_Vector_Add(circlePos,result);
 }
@@ -492,6 +328,7 @@ CP_Vector Reflect(CP_Vector direction, CP_Vector normal)
 	return reflectedVector;
 }
 
+//Returns float perlin noise (might not be correct, use CProcessing Perlin instead)
 float PerlinNoise(int x, int y)
 {
 	int n;
