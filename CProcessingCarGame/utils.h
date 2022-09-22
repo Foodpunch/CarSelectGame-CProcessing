@@ -3,7 +3,7 @@
 #include "cprocessing_common.h"
 #include <math.h>
 
-//Can probably rename this to gamecore
+//Can probably rename this to gamecore or coreutils or something
 
 typedef struct Transform
 {
@@ -40,28 +40,22 @@ typedef struct Collider
 
 typedef struct RigidBody2D
 {
+	Collider collider;
 	CP_Vector velocity;
+	CP_Vector force;
 	float mass;
 	float gravityScale;
 	//maybe need to do the constraints here too?
 }RigidBody2D;
 
-//Struct containing the 4 floats, corresponding to position x, position y, size x and size y and color 
-//to define a Rect Area. 
-//Can be used to create multiple Rect Areas of different colors and sizes
-typedef struct RectArea	
+typedef enum ForceMode				//Plucked from UNITY
 {
-	float x, y;
-	float sizeX, sizeY;
-	CP_Color color;
-} RectArea; //feels like a bad name to describe stuff
+	FORCEMODE_IMPULSE,				//Instant, for maybe like explosions
+	FORCEMODE_FORCE,				//Force over time, using mass
+	//FOREMODE_ACCELERATION			//Continuous Acceleration over time ignoring mass
+	//FORCEMODE_VELOCITYCHANGE		//INstant velocity change ignoring mass
+}ForceMode;
 
-typedef struct CircleArea
-{
-	float x, y;
-	float diameter;
-	CP_Color color;
-} CircleArea; //maybe should have done a vector position
 
 typedef void(*ButtonEvent)(void);
 
@@ -91,7 +85,9 @@ typedef struct Button
 RigidBody2D CreateRigidBody(Collider collider, float mass, float gravityScale);
 Collider CreateCollider(Shape shape, _Bool isTrigger);
 void OnCollisionEnter(void);
-
+void UpdatePhysics(void);
+void UpdateRigidBodies(RigidBody2D* rb);
+void AddForce(RigidBody2D* rb, CP_Vector force, ForceMode forcemode);
 
 
 

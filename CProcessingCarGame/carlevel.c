@@ -56,7 +56,7 @@ void Car_Level_Update()
 	MoveBCar(selectedBCar);
 	//MoveCar(selectedCar);
 	CP_Graphics_ClearBackground(LIGHT_GRAY);
-	
+	UpdatePhysics();
 }
 
 void Car_Level_Exit()
@@ -103,19 +103,24 @@ void UpdateBCar(BCar* bcar)
 	if (CheckRightBounds) bcar->carShape.transform.position.x = (float)CP_System_GetWindowWidth() - (bcar->carShape.transform.size.x);
 	if (CheckTopBounds) bcar->carShape.transform.position.y = bcar->carShape.transform.size.x;
 	if (CheckBottomBounds) bcar->carShape.transform.position.y = (float)CP_System_GetWindowHeight() - (bcar->carShape.transform.size.x);
-	//Hacky Car physics stuff, needs heavy clean up. 
+
+	//NEED TO ABSTRACT THIS TO PHYSICS!!
+
 	bcar->direction = RotateVectorByAngle(VECTOR_UP, bcar->carShape.transform.rotation);
-	bcar->rigidbody.velocity = CP_Vector_Set(bcar->direction.x * bcar->acceleration, bcar->direction.y * bcar->acceleration);
+	AddForce(&bcar->rigidbody, CP_Vector_Scale(bcar->direction, bcar->moveSpeed), FORCEMODE_FORCE);
+	////Hacky Car physics stuff, needs heavy clean up. 
 
-	bcar->carShape.transform.position.x += (bcar->rigidbody.velocity.x * bcar->moveSpeed) * CP_System_GetDt();
-	bcar->carShape.transform.position.y += (bcar->rigidbody.velocity.y * bcar->moveSpeed) * CP_System_GetDt();
-	//Checks for acceleration here so you can accelerate and reverse properly
-	if (bcar->acceleration > 0.0f) bcar->acceleration -= (1.f / bcar->rigidbody.mass) * CP_System_GetDt();
-	else if (bcar->acceleration < 0.0f) bcar->acceleration += (1.f / bcar->rigidbody.mass) * CP_System_GetDt();
+	//bcar->rigidbody.velocity = CP_Vector_Set(bcar->direction.x * bcar->acceleration, bcar->direction.y * bcar->acceleration);
 
-	if (CP_Vector_Length(bcar->rigidbody.velocity) < 0.01f) bcar->acceleration = 0.0f;			//clamps acceleration to zero
-	if (bcar->acceleration >= bcar->moveSpeed) bcar->acceleration = bcar->moveSpeed;	//clamp movespeed
-	if (bcar->acceleration <= -bcar->moveSpeed) bcar->acceleration = -bcar->moveSpeed;	//clamp movespeed
+	//bcar->carShape.transform.position.x += (bcar->rigidbody.velocity.x * bcar->moveSpeed) * CP_System_GetDt();
+	//bcar->carShape.transform.position.y += (bcar->rigidbody.velocity.y * bcar->moveSpeed) * CP_System_GetDt();
+	////Checks for acceleration here so you can accelerate and reverse properly
+	//if (bcar->acceleration > 0.0f) bcar->acceleration -= (1.f / bcar->rigidbody.mass) * CP_System_GetDt();
+	//else if (bcar->acceleration < 0.0f) bcar->acceleration += (1.f / bcar->rigidbody.mass) * CP_System_GetDt();
+
+	//if (CP_Vector_Length(bcar->rigidbody.velocity) < 0.01f) bcar->acceleration = 0.0f;			//clamps acceleration to zero
+	//if (bcar->acceleration >= bcar->moveSpeed) bcar->acceleration = bcar->moveSpeed;	//clamp movespeed
+	//if (bcar->acceleration <= -bcar->moveSpeed) bcar->acceleration = -bcar->moveSpeed;	//clamp movespeed
 	DisplayBCar(bcar);
 }
 
@@ -180,7 +185,8 @@ void MoveBCar(BCar* car)
 	//wanna modify the values, if not you're just copying and applying changes to the copy.
 	if (CP_Input_KeyDown(KEY_W) || (CP_Input_KeyDown(KEY_UP)))
 	{
-		car->acceleration += (1.f / car->rigidbody.mass);
+		car->direction = RotateVectorByAngle(VECTOR_UP, car->carShape.transform.rotation);
+		AddForce(&car->rigidbody, CP_Vector_Scale(car->direction, car->moveSpeed), FORCEMODE_FORCE);
 	}
 	if (CP_Input_KeyDown(KEY_S) || (CP_Input_KeyDown(KEY_DOWN)))
 	{

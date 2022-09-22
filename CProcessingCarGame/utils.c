@@ -11,6 +11,9 @@
 //Feels like it should be an array of all GUI objects...
 Button ButtonArray[100];
 int buttonIndex = 0;		//index for the buttons. Used when creating and when updating
+
+RigidBody2D RigidBodyArray[100];
+int rigidBodyIndex = 0;
 //TODO: What happens when buttons are destroyed? Or like need to remove from memory. hmm...
 //Can I just save over? Or just --index..
 
@@ -219,9 +222,12 @@ void DisplayShape(Shape _shape)
 RigidBody2D CreateRigidBody(Collider collider, float mass, float gravityScale)
 {
 	RigidBody2D _rb;
+	_rb.collider = collider;
 	_rb.mass = mass;
 	_rb.gravityScale = gravityScale;
 	_rb.velocity = CP_Vector_Zero();
+	RigidBodyArray[rigidBodyIndex] = _rb;
+	rigidBodyIndex+=1;
 	return _rb;
 }
 
@@ -238,6 +244,46 @@ Collider CreateCollider(Shape shape, _Bool isTrigger)
 void OnCollisionEnter()
 {
 
+}
+void UpdatePhysics()
+{
+	if (rigidBodyIndex == 0) return;
+	for (short i = 0; i < rigidBodyIndex; ++i)
+	{
+		UpdateRigidBodies(&RigidBodyArray[i]);
+	}
+}
+//TODO: IMPLEMENT FIXED DELTA TIME!!!!!!!!!!!
+void UpdateRigidBodies(RigidBody2D *rb)	
+{
+	//rb->collider.shape.transform.position.x += rb->velocity.x * CP_System_GetDt();
+	rb->collider.shape.transform.position.x +=100;
+	rb->collider.shape.transform.position.y += rb->velocity.y*CP_System_GetDt();
+
+	//Decrease velocity over time
+	//velocity -= (velocity/mass)*dt is what this does
+//	rb->velocity = CP_Vector_Subtract(rb->velocity, CP_Vector_Scale(rb->velocity, (1.f / rb->mass)*CP_System_GetDt()));
+
+	//If velocity gets below a certain point, sleep
+	//if (CP_Vector_Length(rb->velocity) < 0.01f) rb->force = CP_Vector_Zero();
+
+}
+
+void AddForce(RigidBody2D* rb, CP_Vector force, ForceMode forcemode)
+{
+	switch (forcemode)
+	{
+	case FORCEMODE_FORCE:
+		//velocity += force/mass;
+		rb->velocity = CP_Vector_Add(rb->velocity, CP_Vector_Scale(force,1.f/rb->mass));
+		//if (CP_Vector_Length(rb->velocity) >= CP_Vector_Length(force)) rb->velocity = force;
+		break;
+	case FORCEMODE_IMPULSE:
+		rb->velocity = CP_Vector_Add(rb->velocity, force);
+		break;
+	default:
+		break;
+	}
 }
 
 
