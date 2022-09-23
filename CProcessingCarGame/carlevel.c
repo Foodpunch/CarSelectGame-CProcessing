@@ -40,11 +40,7 @@ void Car_Level_Init()
 
 void Car_Level_Update()
 {
-	//UpdateCar(&CarA);
-	//UpdateCar(&CarB);
-	//UpdateCar(&CarC);
-	//UpdateButton(QuitGamebutton,CP_POSITION_CENTER);
-	UpdatePhysics();
+	
 	CP_Settings_Fill(BLACK);
 	//DisplayTextInRect(instructionsText, "WASD to move\n Space to brake \n Click to control");
 	/*
@@ -55,11 +51,12 @@ void Car_Level_Update()
 	UpdateBCar(&BCar1);
 	UpdateBCar(&BCar2);
 	UpdateBCar(&BCar3);
-	MoveBCar(selectedBCar);
+	UpdatePhysics();
+	//MoveBCar(selectedBCar);
 	
 	//MoveCar(selectedCar);
 	CP_Graphics_ClearBackground(LIGHT_GRAY);
-	UpdatePhysics();
+	//UpdatePhysics();
 }
 
 void Car_Level_Exit()
@@ -72,7 +69,7 @@ BCar CreateBCar(float x, float y, float diameter, CP_Color color, float speed, f
 {
 	BCar xnewCar;
 	xnewCar.carShape = CreateShape(x, y, diameter, diameter, 0, SHAPE_CIRCLE);	//Circle and not circle ellipse because I think it's easier to calculate
-	xnewCar.rigidbody = CreateRigidBody(&xnewCar.carShape, mass, 0);
+	xnewCar.rigidbody = CreateRigidBody(xnewCar.carShape, mass, 0);
 	xnewCar.color = color;
 	xnewCar.moveSpeed = speed;
 	xnewCar.acceleration = 0;
@@ -84,7 +81,9 @@ BCar CreateBCar(float x, float y, float diameter, CP_Color color, float speed, f
 void DisplayBCar(BCar* bcar)
 {
 	CP_Settings_Fill(bcar->color);
-	bcar->carShape.transform = bcar->rigidbody.collider.shape.transform;
+	bcar->rigidbody.collider.shape.transform.position.x+= 10 * CP_System_GetDt();
+	//bcar->carShape.transform = bcar->rigidbody.collider.shape.transform;
+	bcar->carShape.transform = RigidBodyArray[bcar->rigidbody.id].collider.shape.transform;
 	//DisplayShape(bcar->rigidbody.collider.shape);
 	DisplayShape(bcar->carShape);
 	//DrawTriangleAdvanced(GetPointInCircle(bcar->carShape, 50), GetPointInCircle(bcar->carShape, 130), GetPointInCircle(bcar->carShape, 270), bcar->carShape.transform.rotation);
@@ -97,7 +96,7 @@ void UpdateBCar(BCar* bcar)
 		selectedBCar = bcar;
 	}
 	//Hacky collision detection
-	_Bool CheckLeftBounds = (bcar->carShape.transform.position.x < bcar->carShape.transform.size.x);
+	/*_Bool CheckLeftBounds = (bcar->carShape.transform.position.x < bcar->carShape.transform.size.x);
 	_Bool CheckRightBounds = (bcar->carShape.transform.position.x > ((float)CP_System_GetWindowWidth() - bcar->carShape.transform.size.x));
 	_Bool CheckTopBounds = (bcar->carShape.transform.position.y < bcar->carShape.transform.size.x);
 	_Bool CheckBottomBounds = (bcar->carShape.transform.position.y > ((float)CP_System_GetWindowHeight() - bcar->carShape.transform.size.x));
@@ -105,12 +104,12 @@ void UpdateBCar(BCar* bcar)
 	if (CheckLeftBounds) bcar->carShape.transform.position.x = bcar->carShape.transform.size.x;
 	if (CheckRightBounds) bcar->carShape.transform.position.x = (float)CP_System_GetWindowWidth() - (bcar->carShape.transform.size.x);
 	if (CheckTopBounds) bcar->carShape.transform.position.y = bcar->carShape.transform.size.x;
-	if (CheckBottomBounds) bcar->carShape.transform.position.y = (float)CP_System_GetWindowHeight() - (bcar->carShape.transform.size.x);
+	if (CheckBottomBounds) bcar->carShape.transform.position.y = (float)CP_System_GetWindowHeight() - (bcar->carShape.transform.size.x);*/
 
 	//NEED TO ABSTRACT THIS TO PHYSICS!!
 
-	bcar->direction = RotateVectorByAngle(VECTOR_UP, bcar->carShape.transform.rotation);
-	AddForce(&bcar->rigidbody, CP_Vector_Scale(bcar->direction, bcar->moveSpeed), FORCEMODE_FORCE);
+	//bcar->direction = RotateVectorByAngle(VECTOR_UP, bcar->carShape.transform.rotation);
+	//AddForce(&bcar->rigidbody, CP_Vector_Scale(bcar->direction, bcar->moveSpeed), FORCEMODE_FORCE);
 	////Hacky Car physics stuff, needs heavy clean up. 
 
 	//bcar->rigidbody.velocity = CP_Vector_Set(bcar->direction.x * bcar->acceleration, bcar->direction.y * bcar->acceleration);
@@ -189,7 +188,7 @@ void MoveBCar(BCar* car)
 	if (CP_Input_KeyDown(KEY_W) || (CP_Input_KeyDown(KEY_UP)))
 	{
 		car->direction = RotateVectorByAngle(VECTOR_UP, car->rigidbody.collider.shape.transform.rotation);
-		AddForce(&car->rigidbody, CP_Vector_Scale(car->direction, car->moveSpeed), FORCEMODE_FORCE);
+		AddForce(car->rigidbody, CP_Vector_Scale(car->direction, car->moveSpeed), FORCEMODE_FORCE);
 	}
 	if (CP_Input_KeyDown(KEY_S) || (CP_Input_KeyDown(KEY_DOWN)))
 	{
@@ -208,7 +207,7 @@ void MoveBCar(BCar* car)
 		car->acceleration /= 1.1f;
 	}
 	CP_Settings_Stroke(BLACK);
-	//DisplayBCar(car);
+	DisplayBCar(car);
 	CP_Settings_NoStroke();
 }
 

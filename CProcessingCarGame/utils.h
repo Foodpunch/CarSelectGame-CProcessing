@@ -5,6 +5,9 @@
 
 //Can probably rename this to gamecore or coreutils or something
 
+
+
+
 typedef struct Transform
 {
 	CP_Vector position;
@@ -43,10 +46,12 @@ typedef struct RigidBody2D
 	Collider collider;
 	CP_Vector velocity;
 	CP_Vector force;
+	int id;
 	float mass;
 	float gravityScale;
 	//maybe need to do the constraints here too?
 }RigidBody2D;
+extern RigidBody2D RigidBodyArray[100];
 
 typedef enum ForceMode				//Plucked from UNITY
 {
@@ -69,7 +74,7 @@ typedef struct Button
 	CP_Color cachedColor;		//feels so dirty to do this hmm...
 	//ShapeButton cachedButton; //I think this is not allowed because the size isn't defined yet? 
 } Button;
-
+extern Button ButtonArray[100];
 //===============|| VECTOR DEFINES || =================================
 
 //VECTOR UP: (0,-1)
@@ -82,12 +87,12 @@ typedef struct Button
 #define VECTOR_LEFT CP_Vector_Set(-1,0)
 
 //============|| PHYSICS STUFF ||========================================
-RigidBody2D CreateRigidBody(Shape* shape, float mass, float gravityScale);
-Collider CreateCollider(Shape* shape, _Bool isTrigger);
+RigidBody2D CreateRigidBody(Shape shape, float mass, float gravityScale);
+Collider CreateCollider(Shape shape, _Bool isTrigger);
 void OnCollisionEnter(void);
 void UpdatePhysics(void);
 void UpdateRigidBodies(RigidBody2D* rb);
-void AddForce(RigidBody2D* rb, CP_Vector force, ForceMode forcemode);
+void AddForce(RigidBody2D rb, CP_Vector force, ForceMode forcemode);
 
 
 
