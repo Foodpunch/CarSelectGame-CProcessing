@@ -25,8 +25,8 @@ void Car_Level_Init()
 	CP_System_SetWindowSize(500, 500);
 
 	BCar1 = CreateBCar(250, 150, 25, LIGHT_RED, 20, 2.0f);
-	BCar2 = CreateBCar(250, 250, 50, LIGHT_GREEN, 15, 1.5f);
-	BCar3 = CreateBCar(250, 350, 50, LIGHT_BLUE, 20, 1.0f);
+	BCar2 = CreateBCar(250, 250, 25, LIGHT_GREEN, 15, 1.5f);
+	BCar3 = CreateBCar(250, 350, 25, LIGHT_BLUE, 20, 1.0f);
 
 	selectedBCar = &BCar1;
 
@@ -44,7 +44,7 @@ void Car_Level_Update()
 	//UpdateCar(&CarB);
 	//UpdateCar(&CarC);
 	//UpdateButton(QuitGamebutton,CP_POSITION_CENTER);
-
+	UpdatePhysics();
 	CP_Settings_Fill(BLACK);
 	//DisplayTextInRect(instructionsText, "WASD to move\n Space to brake \n Click to control");
 	/*
@@ -53,7 +53,10 @@ void Car_Level_Update()
 	CP_Font_DrawText("Click on cars to control them", 50, 70);*/
 	//DisplayBCar(&BCar1);
 	UpdateBCar(&BCar1);
+	UpdateBCar(&BCar2);
+	UpdateBCar(&BCar3);
 	MoveBCar(selectedBCar);
+	
 	//MoveCar(selectedCar);
 	CP_Graphics_ClearBackground(LIGHT_GRAY);
 	UpdatePhysics();
@@ -69,9 +72,7 @@ BCar CreateBCar(float x, float y, float diameter, CP_Color color, float speed, f
 {
 	BCar xnewCar;
 	xnewCar.carShape = CreateShape(x, y, diameter, diameter, 0, SHAPE_CIRCLE);	//Circle and not circle ellipse because I think it's easier to calculate
-	xnewCar.carCollider = CreateCollider(xnewCar.carShape, FALSE);
-	xnewCar.carCollider.colliderLayer = 0;
-	xnewCar.rigidbody = CreateRigidBody(xnewCar.carCollider, mass, 0);
+	xnewCar.rigidbody = CreateRigidBody(&xnewCar.carShape, mass, 0);
 	xnewCar.color = color;
 	xnewCar.moveSpeed = speed;
 	xnewCar.acceleration = 0;
@@ -83,8 +84,10 @@ BCar CreateBCar(float x, float y, float diameter, CP_Color color, float speed, f
 void DisplayBCar(BCar* bcar)
 {
 	CP_Settings_Fill(bcar->color);
+	bcar->carShape.transform = bcar->rigidbody.collider.shape.transform;
+	//DisplayShape(bcar->rigidbody.collider.shape);
 	DisplayShape(bcar->carShape);
-	DrawTriangleAdvanced(GetPointInCircle(bcar->carShape, 50), GetPointInCircle(bcar->carShape, 130), GetPointInCircle(bcar->carShape, 270), bcar->carShape.transform.rotation);
+	//DrawTriangleAdvanced(GetPointInCircle(bcar->carShape, 50), GetPointInCircle(bcar->carShape, 130), GetPointInCircle(bcar->carShape, 270), bcar->carShape.transform.rotation);
 }
 
 void UpdateBCar(BCar* bcar)
@@ -185,7 +188,7 @@ void MoveBCar(BCar* car)
 	//wanna modify the values, if not you're just copying and applying changes to the copy.
 	if (CP_Input_KeyDown(KEY_W) || (CP_Input_KeyDown(KEY_UP)))
 	{
-		car->direction = RotateVectorByAngle(VECTOR_UP, car->carShape.transform.rotation);
+		car->direction = RotateVectorByAngle(VECTOR_UP, car->rigidbody.collider.shape.transform.rotation);
 		AddForce(&car->rigidbody, CP_Vector_Scale(car->direction, car->moveSpeed), FORCEMODE_FORCE);
 	}
 	if (CP_Input_KeyDown(KEY_S) || (CP_Input_KeyDown(KEY_DOWN)))
@@ -194,18 +197,18 @@ void MoveBCar(BCar* car)
 	}
 	if (CP_Input_KeyDown(KEY_D) || (CP_Input_KeyDown(KEY_RIGHT)))
 	{
-		car->carShape.transform.rotation += 10.f;
+		car->rigidbody.collider.shape.transform.rotation += 10.f;
 	}
 	if (CP_Input_KeyDown(KEY_A) || (CP_Input_KeyDown(KEY_LEFT)))
 	{
-		car->carShape.transform.rotation -= 10.f;
+		car->rigidbody.collider.shape.transform.rotation -= 10.f;
 	}
 	if (CP_Input_KeyDown(KEY_SPACE))
 	{
 		car->acceleration /= 1.1f;
 	}
 	CP_Settings_Stroke(BLACK);
-	DisplayBCar(car);
+	//DisplayBCar(car);
 	CP_Settings_NoStroke();
 }
 

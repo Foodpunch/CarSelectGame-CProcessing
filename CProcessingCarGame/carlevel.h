@@ -7,7 +7,6 @@ typedef struct BCar
 {
 	Shape carShape;
 	CP_Color color;
-	Collider carCollider;
 	RigidBody2D rigidbody;
 	CP_Vector direction;
 	float acceleration;

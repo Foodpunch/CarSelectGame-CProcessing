@@ -198,6 +198,23 @@ Shape CreateShape(float x, float y, float sizeX, float sizeY,float rotation, Sha
 	newShape.shape = shapetype;
 	return newShape;
 }
+//void DisplayPointerShape(Shape* _shape)
+//{
+//	switch (_shape.shape)
+//	{
+//	case SHAPE_CIRCLE:
+//		CP_Graphics_DrawCircle(_shape.transform.position.x, _shape.transform.position.y, _shape.transform.size.x * 2);
+//		break;
+//	case SHAPE_RECTANGLE:
+//		CP_Graphics_DrawRectAdvanced(_shape.transform.position.x, _shape.transform.position.y, _shape.transform.size.x, _shape.transform.size.y, _shape.transform.rotation, 0);
+//		break;
+//	case SHAPE_ELLIPSE:
+//		CP_Graphics_DrawEllipseAdvanced(_shape.transform.position.x, _shape.transform.position.y, _shape.transform.size.x, _shape.transform.size.y, _shape.transform.rotation);
+//		break;
+//	default:
+//		break;
+//	}
+//}
 
 void DisplayShape(Shape _shape)
 {
@@ -219,9 +236,10 @@ void DisplayShape(Shape _shape)
 
 
 //##############################|| PHYSICS STUFF || #####################################################################
-RigidBody2D CreateRigidBody(Collider collider, float mass, float gravityScale)
+RigidBody2D CreateRigidBody(Shape* shape, float mass, float gravityScale)
 {
 	RigidBody2D _rb;
+	Collider collider = CreateCollider(shape, FALSE);
 	_rb.collider = collider;
 	_rb.mass = mass;
 	_rb.gravityScale = gravityScale;
@@ -231,10 +249,10 @@ RigidBody2D CreateRigidBody(Collider collider, float mass, float gravityScale)
 	return _rb;
 }
 
-Collider CreateCollider(Shape shape, _Bool isTrigger)
+Collider CreateCollider(Shape* shape, _Bool isTrigger)
 {
 	Collider newCollider;
-	newCollider.shape = shape;
+	newCollider.shape = *shape;
 	newCollider.colliderEvent = OnCollisionEnter;		
 	newCollider.isTrigger = isTrigger;
 	return newCollider;
@@ -257,8 +275,11 @@ void UpdatePhysics()
 void UpdateRigidBodies(RigidBody2D *rb)	
 {
 	//rb->collider.shape.transform.position.x += rb->velocity.x * CP_System_GetDt();
-	rb->collider.shape.transform.position.x +=100;
-	rb->collider.shape.transform.position.y += rb->velocity.y*CP_System_GetDt();
+
+	rb->collider.shape.transform.position.x += 10 * CP_System_GetDt();
+	rb->collider.shape.transform.position.y += 10 * CP_System_GetDt();
+	//rb->collider.shape.transform.position.y += rb->velocity.y * CP_System_GetDt();
+	//DisplayShape(rb->collider.shape);
 
 	//Decrease velocity over time
 	//velocity -= (velocity/mass)*dt is what this does
@@ -275,7 +296,7 @@ void AddForce(RigidBody2D* rb, CP_Vector force, ForceMode forcemode)
 	{
 	case FORCEMODE_FORCE:
 		//velocity += force/mass;
-		rb->velocity = CP_Vector_Add(rb->velocity, CP_Vector_Scale(force,1.f/rb->mass));
+		//rb->velocity = CP_Vector_Add(rb->velocity, CP_Vector_Scale(force,1.f/rb->mass));
 		//if (CP_Vector_Length(rb->velocity) >= CP_Vector_Length(force)) rb->velocity = force;
 		break;
 	case FORCEMODE_IMPULSE:

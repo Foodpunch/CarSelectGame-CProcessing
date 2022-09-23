@@ -82,8 +82,8 @@ typedef struct Button
 #define VECTOR_LEFT CP_Vector_Set(-1,0)
 
 //============|| PHYSICS STUFF ||========================================
-RigidBody2D CreateRigidBody(Collider collider, float mass, float gravityScale);
-Collider CreateCollider(Shape shape, _Bool isTrigger);
+RigidBody2D CreateRigidBody(Shape* shape, float mass, float gravityScale);
+Collider CreateCollider(Shape* shape, _Bool isTrigger);
 void OnCollisionEnter(void);
 void UpdatePhysics(void);
 void UpdateRigidBodies(RigidBody2D* rb);
