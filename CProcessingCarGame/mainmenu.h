@@ -1,5 +1,10 @@
 #pragma once
 
+Button rectButton;
+Button circleButton;
+Button ellipseButton;
+Button circleEllipseButton;
+
 void Main_Menu_Init(void);
 
 void Main_Menu_Update(void);

@@ -40,18 +40,37 @@ typedef struct Collider
 	int colliderLayer;
 	ColliderEvent colliderEvent;
 }Collider;
-
+typedef enum Constraints
+{
+	CONSTRAINTS_NONE,
+	CONSTRAINTS_LEVEL
+}Constraints;
 typedef struct RigidBody2D
 {
 	Collider collider;
 	CP_Vector velocity;
 	CP_Vector force;
-	int id;
+	Constraints constraints;
 	float mass;
 	float gravityScale;
 	//maybe need to do the constraints here too?
 }RigidBody2D;
-extern RigidBody2D RigidBodyArray[100];
+
+
+
+typedef struct PhysicsObject
+{
+	CP_Color color;
+	RigidBody2D rigidBody;
+	int id;
+	CP_Vector direction;
+	float speed;
+
+}PhysicsObject;
+
+extern PhysicsObject PhysicsObjectArray[100];
+
+
 
 typedef enum ForceMode				//Plucked from UNITY
 {
@@ -67,6 +86,7 @@ typedef void(*ButtonEvent)(void);
 typedef struct Button
 {
 	Shape shape;
+	int id;
 	CP_Color color;
 	char* text;
 	ButtonEvent buttEvent;
@@ -87,14 +107,15 @@ extern Button ButtonArray[100];
 #define VECTOR_LEFT CP_Vector_Set(-1,0)
 
 //============|| PHYSICS STUFF ||========================================
-RigidBody2D CreateRigidBody(Shape shape, float mass, float gravityScale);
+RigidBody2D CreateRigidBody(Collider coll, float mass, Constraints constraints);
 Collider CreateCollider(Shape shape, _Bool isTrigger);
 void OnCollisionEnter(void);
 void UpdatePhysics(void);
-void UpdateRigidBodies(RigidBody2D* rb);
-void AddForce(RigidBody2D rb, CP_Vector force, ForceMode forcemode);
+void AddForce(PhysicsObject rb, CP_Vector force, ForceMode forcemode);
 
-
+PhysicsObject CreatePhysicsObject(float x, float y, float diameter, CP_Color color, float speed, float mass,Constraints constraints);
+void UpdatePhysicsObjects(PhysicsObject* obj);
+PhysicsObject GetPhysicsObject(PhysicsObject* obj);
 
 //=============|| GUI && BUTTON STUFF ||=================================
 
@@ -111,6 +132,7 @@ void DisplayTextInShape(Shape shape, const char* text);
 void DisplayButtonText(Button *_button, CP_Color _color);
 void DisplayButton(Button *_button);
 void UpdateGUI(void);
+void RemoveButton(Button button);
 
 
 //===============|| UTILITY FUNCTIONS || =============================

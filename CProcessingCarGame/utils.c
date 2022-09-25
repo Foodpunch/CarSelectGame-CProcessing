@@ -12,8 +12,8 @@
 Button ButtonArray[100];
 int buttonIndex = 0;		//index for the buttons. Used when creating and when updating
 
-RigidBody2D RigidBodyArray[100];
-int rigidBodyIndex = 0;
+PhysicsObject  PhysicsObjectArray[100];
+int physicsObjectIndex = 0;
 //TODO: What happens when buttons are destroyed? Or like need to remove from memory. hmm...
 //Can I just save over? Or just --index..
 
@@ -78,7 +78,7 @@ Button CreateShapeButton(Shape shape, const char* buttonText,CP_Color color, But
 	newButton.buttEvent = buttEvent;
 	newButton.cachedTransform = shape.transform;
 	newButton.cachedColor = color;
-
+	newButton.id = buttonIndex;
 	ButtonArray[buttonIndex] = newButton;
 
 	buttonIndex+=1;
@@ -217,19 +217,27 @@ void DisplayShape(Shape _shape)
 	}
 }
 
+void RemoveButton(Button button)
+{
+	//No clue how to do this for now. 
+}
+
 
 //##############################|| PHYSICS STUFF || #####################################################################
-RigidBody2D CreateRigidBody(Shape shape, float mass, float gravityScale)
+
+RigidBody2D CreateRigidBody(Collider collider, float mass, Constraints constraints)
 {
-	RigidBody2D _rb;
-	_rb.collider = CreateCollider(shape, FALSE);
-	_rb.mass = mass;
-	_rb.gravityScale = gravityScale;
-	_rb.velocity = CP_Vector_Zero();
-	_rb.id = rigidBodyIndex;
-	RigidBodyArray[rigidBodyIndex] = _rb;
-	rigidBodyIndex+=1;
-	return _rb;
+	RigidBody2D rb;
+	rb.constraints = constraints;
+	rb.collider = collider;
+	rb.mass = mass;
+	rb.gravityScale = 0;
+	rb.velocity = CP_Vector_Zero();
+	rb.force = CP_Vector_Zero();
+	//RigidBodyArray[rigidBodyIndex] = rb;
+	//rigidBodyIndex += 1;
+	//SetRigidbodyPointer(&rb);
+	return rb;
 }
 
 Collider CreateCollider(Shape shape, _Bool isTrigger)
@@ -241,6 +249,18 @@ Collider CreateCollider(Shape shape, _Bool isTrigger)
 	return newCollider;
 }
 
+PhysicsObject CreatePhysicsObject(float x, float y, float diameter, CP_Color color, float speed, float mass,Constraints constraints)
+{
+	PhysicsObject newObject;
+	newObject.rigidBody = CreateRigidBody(CreateCollider(CreateShape(x, y, diameter, diameter, 0, SHAPE_CIRCLE), FALSE), mass,constraints);
+	newObject.color = color;
+	newObject.speed = speed;
+	newObject.direction = VECTOR_UP;
+	PhysicsObjectArray[physicsObjectIndex] = newObject;
+	newObject.id = physicsObjectIndex;
+	physicsObjectIndex += 1;
+	return newObject;
+}
 
 void OnCollisionEnter()
 {
@@ -248,42 +268,110 @@ void OnCollisionEnter()
 }
 void UpdatePhysics()
 {
-	if (rigidBodyIndex == 0) return;
-	for (short i = 0; i < rigidBodyIndex; ++i)
+	if (physicsObjectIndex == 0) return;
+	for (short i = 0; i < physicsObjectIndex; ++i)
 	{
-		UpdateRigidBodies(&RigidBodyArray[i]);
+		UpdatePhysicsObjects(&PhysicsObjectArray[i]);
 	}
 }
-//TODO: IMPLEMENT FIXED DELTA TIME!!!!!!!!!!!
-void UpdateRigidBodies(RigidBody2D* rb)	
-{
-	//rb->collider.shape.transform.position.x += rb->velocity.x * CP_System_GetDt();
 
-	rb->collider.shape.transform.position.x += 10 * CP_System_GetDt();
-	rb->collider.shape.transform.position.y += 10 * CP_System_GetDt();
-	//rb->collider.shape.transform.position.y += rb->velocity.y * CP_System_GetDt();
-	//DisplayShape(rb->collider.shape);
 
-	//Decrease velocity over time
-	//velocity -= (velocity/mass)*dt is what this does
-//	rb->velocity = CP_Vector_Subtract(rb->velocity, CP_Vector_Scale(rb->velocity, (1.f / rb->mass)*CP_System_GetDt()));
+//IMPLEMENT FIXED DELTA TIME!!!
+void UpdatePhysicsObjects(PhysicsObject* obj)
+{	
+	//GRAVITY
+	//obj->rigidBody.force = CP_VectorScale(CP_Vector_Add(obj->rigidBody.force, gravity),obj->rigidBody.gravityScale);
 
-	//If velocity gets below a certain point, sleep
-	//if (CP_Vector_Length(rb->velocity) < 0.01f) rb->force = CP_Vector_Zero();
+	//NOTE: RK4 or Verlet can be used here
+	//Velocity += Acceleration (force/mass); I think I'm using Semi Implicit Euler?
+	obj->rigidBody.velocity = CP_Vector_Add(obj->rigidBody.velocity, CP_Vector_Scale(obj->rigidBody.force, 1.f / obj->rigidBody.mass));
+	//Clamp the velocity to the max speed of the obj.. 
+	if (CP_Vector_Length(obj->rigidBody.velocity) > obj->speed)
+	{
+		obj->rigidBody.velocity = CP_Vector_Scale(CP_Vector_Normalize(obj->rigidBody.velocity),obj->speed);
+	}
 
+	//"FRICTION" supposed to be -1 * u * N * mass. TODO: friction co-efficient
+	CP_Vector friction = CP_Vector_Normalize(obj->rigidBody.velocity);
+	friction = CP_Vector_Scale(friction, -0.01f * obj->rigidBody.mass);
+	obj->rigidBody.velocity = CP_Vector_Add(obj->rigidBody.velocity, friction);
+
+	//Stops the obj if it's too slow
+	if (CP_Vector_Length(obj->rigidBody.velocity) <= 0) obj->rigidBody.velocity = CP_Vector_Zero();
+	
+	obj->rigidBody.collider.shape.transform.position.x += obj->rigidBody.velocity.x;
+	obj->rigidBody.collider.shape.transform.position.y += obj->rigidBody.velocity.y;
+
+
+	//CONSTRAINTS
+	switch (obj->rigidBody.constraints)
+	{
+		_Bool CheckLeftBounds;
+		_Bool CheckRightBounds;
+		_Bool CheckTopBounds;
+		_Bool CheckBottomBounds;
+	case CONSTRAINTS_LEVEL:	//Assuming elasticity is MAX
+		CheckLeftBounds = (obj->rigidBody.collider.shape.transform.position.x < obj->rigidBody.collider.shape.transform.size.x);
+		CheckRightBounds = (obj->rigidBody.collider.shape.transform.position.x > ((float)CP_System_GetWindowWidth()-obj->rigidBody.collider.shape.transform.size.x));
+		CheckTopBounds = (obj->rigidBody.collider.shape.transform.position.y < obj->rigidBody.collider.shape.transform.size.y);
+		CheckBottomBounds = (obj->rigidBody.collider.shape.transform.position.y > ((float)CP_System_GetWindowHeight() - obj->rigidBody.collider.shape.transform.size.y));
+		if (CheckLeftBounds)
+		{
+			obj->rigidBody.collider.shape.transform.position.x = obj->rigidBody.collider.shape.transform.size.x;
+			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_RIGHT);
+		}
+		if (CheckRightBounds)
+		{
+			obj->rigidBody.collider.shape.transform.position.x = (float)CP_System_GetWindowWidth() - obj->rigidBody.collider.shape.transform.size.x;
+			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_LEFT);
+		}
+		if (CheckTopBounds)
+		{
+			obj->rigidBody.collider.shape.transform.position.y = obj->rigidBody.collider.shape.transform.size.y;
+			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_DOWN);
+		}
+		if (CheckBottomBounds)
+		{
+			obj->rigidBody.collider.shape.transform.position.y = (float)CP_System_GetWindowHeight() - obj->rigidBody.collider.shape.transform.size.y;
+			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_UP);
+		}
+		break;
+	case CONSTRAINTS_NONE:
+		//do nothing
+		break;
+	default:
+		break;
+	}
+
+
+
+
+
+
+
+	//Reset force
+	obj->rigidBody.force = CP_Vector_Zero();
+	
+	CP_Settings_Fill(obj->color);
+	DisplayShape(obj->rigidBody.collider.shape);
+	DrawTriangleAdvanced(GetPointInCircle(obj->rigidBody.collider.shape, 50), GetPointInCircle(obj->rigidBody.collider.shape, 130), GetPointInCircle(obj->rigidBody.collider.shape, 270), obj->rigidBody.collider.shape.transform.rotation);
 }
 
-void AddForce(RigidBody2D rb, CP_Vector force, ForceMode forcemode)
+void AddForce(PhysicsObject obj, CP_Vector force, ForceMode forcemode)
 {
 	switch (forcemode)
 	{
 	case FORCEMODE_FORCE:
 		//velocity += force/mass;
-		//rb->velocity = CP_Vector_Add(rb->velocity, CP_Vector_Scale(force,1.f/rb->mass));
-		//if (CP_Vector_Length(rb->velocity) >= CP_Vector_Length(force)) rb->velocity = force;
+		PhysicsObjectArray[obj.id].rigidBody.force = CP_Vector_Add(PhysicsObjectArray[obj.id].rigidBody.force, force);
 		break;
 	case FORCEMODE_IMPULSE:
-		//rb.velocity = CP_Vector_Add(rb.velocity, force);
+		PhysicsObjectArray[obj.id].rigidBody.force = CP_Vector_Add(PhysicsObjectArray[obj.id].rigidBody.force, CP_Vector_Scale(force, PhysicsObjectArray[obj.id].rigidBody.mass));
+	/*
+		if (CP_Vector_Length(PhysicsObjectArray[obj.id].rigidBody.velocity) >= CP_Vector_Length(force))
+		{
+			PhysicsObjectArray[obj.id].rigidBody.velocity = force;
+		}*/
 		break;
 	default:
 		break;

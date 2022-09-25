@@ -12,12 +12,9 @@ CP_POSITION_MODE menuRectPosition = CP_POSITION_CENTER;
 //Shape testEllipse;
 //Shape testCircleEllipse;
 
-Button rectButton;
-Button circleButton;
-Button ellipseButton;
-Button circleEllipseButton;
 
-char *tempText = "Car Select Game";
+
+char *tempText = "Bumper Car Select Game";
 FILE* testFile;
 char buffer2[64];
 void Main_Menu_Init()
@@ -27,9 +24,9 @@ void Main_Menu_Init()
 
 
 	rectButton = CreateButton(250, 100, 150, 50, SHAPE_RECTANGLE, "Rect Button", LIGHT_BLUE, StartGame);
-	rectButton = CreateButton(250, 200, 40, 40, SHAPE_CIRCLE, "Circle Button", LIGHT_RED, StartGame);
-	rectButton = CreateButton(250, 300, 80, 80, SHAPE_ELLIPSE, "circle ellipse Button", LIGHT_GREEN, StartGame);
-	rectButton = CreateButton(250, 400, 150, 50, SHAPE_ELLIPSE, "Ellipse Button", LIGHT_YELLOW, RandomNoise);
+	circleButton = CreateButton(250, 200, 40, 40, SHAPE_CIRCLE, "Circle Button", LIGHT_RED, StartGame);
+	circleEllipseButton = CreateButton(250, 300, 80, 80, SHAPE_ELLIPSE, "circle ellipse Button", LIGHT_GREEN, StartGame);
+	ellipseButton = CreateButton(250, 400, 150, 50, SHAPE_ELLIPSE, "Ellipse Button", LIGHT_YELLOW, RandomNoise);
 
 }
 
