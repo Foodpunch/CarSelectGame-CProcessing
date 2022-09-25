@@ -2,11 +2,13 @@
 #include "cprocessing.h"
 #include "cprocessing_common.h"
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 //Can probably rename this to gamecore or coreutils or something
 
 
-
+extern float trauma;
 
 typedef struct Transform
 {
@@ -117,6 +119,10 @@ PhysicsObject CreatePhysicsObject(float x, float y, float diameter, CP_Color col
 void UpdatePhysicsObjects(PhysicsObject* obj);
 PhysicsObject GetPhysicsObject(PhysicsObject* obj);
 
+
+_Bool IsCircleIntersecting(Shape shapeA, Shape shapeB);
+void CheckCollisionsBruteForce(void); //Next time do sweep and prune or something
+
 //=============|| GUI && BUTTON STUFF ||=================================
 
 Shape CreateShape(float x, float y, float sizeX, float sizeY,float rotation, ShapeType shapetype);
@@ -159,6 +165,9 @@ CP_Vector GetPointInCircle(Shape shape, float angleInDeg);
 CP_Vector Reflect(CP_Vector direction, CP_Vector normal);
 float PerlinNoise(int x, int y);	
 CP_Vector GetRandomVector(void);
+
+
+float DistanceBetweenPhysicsObject(PhysicsObject ObjA, PhysicsObject ObjB);
 
 //===============|| CAMERA FUNCTIONS || =============================
 //Function that Updates the camera shaker. Must be called in update loop for the camera shaker to work.

@@ -1,5 +1,5 @@
 #pragma once
-#include "cprocessing.h"
+//#include "cprocessing.h"
 #include "utils.h"
 
 
@@ -12,7 +12,7 @@ void Car_Level_Init(void);
 void Car_Level_Update(void);
 //Exit function for car.c, shoud
 void Car_Level_Exit(void);
-void OnCarClick(PhysicsObject* obj);
+void UpdateCars(PhysicsObject* obj);
 //Function that creates a car with the specified parameters.
 //Car CreateCar(float x, float y, float diameter, CP_Color color, float speed, float mass);
 //Car CreateCar(CircleArea circle, float _moveSpeed); 

@@ -1,4 +1,4 @@
-#include "cprocessing.h"
+//#include "cprocessing.h"
 #include "utils.h"
 #include "colortable.h"
 
@@ -14,6 +14,9 @@ int buttonIndex = 0;		//index for the buttons. Used when creating and when updat
 
 PhysicsObject  PhysicsObjectArray[100];
 int physicsObjectIndex = 0;
+
+
+PhysicsObject* CollisionArray[100];
 //TODO: What happens when buttons are destroyed? Or like need to remove from memory. hmm...
 //Can I just save over? Or just --index..
 
@@ -98,7 +101,7 @@ _Bool IsShapeButtonClicked(Button* _button)
 
 void UpdateGUI()
 {
-	UpdateCameraShaker();
+	//UpdateCameraShaker();
 	if (buttonIndex == 0) return;
 	for (short i = 0; i < buttonIndex; ++i)
 	{
@@ -273,7 +276,9 @@ void UpdatePhysics()
 	{
 		UpdatePhysicsObjects(&PhysicsObjectArray[i]);
 	}
+	CheckCollisionsBruteForce();
 }
+
 
 
 //IMPLEMENT FIXED DELTA TIME!!!
@@ -281,7 +286,7 @@ void UpdatePhysicsObjects(PhysicsObject* obj)
 {	
 	//GRAVITY
 	//obj->rigidBody.force = CP_VectorScale(CP_Vector_Add(obj->rigidBody.force, gravity),obj->rigidBody.gravityScale);
-
+	//CheckCollisionsBruteForce();
 	//NOTE: RK4 or Verlet can be used here
 	//Velocity += Acceleration (force/mass); I think I'm using Semi Implicit Euler?
 	obj->rigidBody.velocity = CP_Vector_Add(obj->rigidBody.velocity, CP_Vector_Scale(obj->rigidBody.force, 1.f / obj->rigidBody.mass));
@@ -297,11 +302,13 @@ void UpdatePhysicsObjects(PhysicsObject* obj)
 	obj->rigidBody.velocity = CP_Vector_Add(obj->rigidBody.velocity, friction);
 
 	//Stops the obj if it's too slow
-	if (CP_Vector_Length(obj->rigidBody.velocity) <= 0) obj->rigidBody.velocity = CP_Vector_Zero();
-	
-	obj->rigidBody.collider.shape.transform.position.x += obj->rigidBody.velocity.x;
-	obj->rigidBody.collider.shape.transform.position.y += obj->rigidBody.velocity.y;
+	if (CP_Vector_Length(obj->rigidBody.velocity) <= 0.1f) obj->rigidBody.velocity = CP_Vector_Zero();
 
+	obj->rigidBody.collider.shape.transform.position = CP_Vector_Add(obj->rigidBody.collider.shape.transform.position, obj->rigidBody.velocity);
+	//obj->rigidBody.collider.shape.transform.position.x += obj->rigidBody.velocity.x;
+	//obj->rigidBody.collider.shape.transform.position.y += obj->rigidBody.velocity.y;
+	
+	//CheckCollisionsBruteForce();	
 
 	//CONSTRAINTS
 	switch (obj->rigidBody.constraints)
@@ -310,6 +317,7 @@ void UpdatePhysicsObjects(PhysicsObject* obj)
 		_Bool CheckRightBounds;
 		_Bool CheckTopBounds;
 		_Bool CheckBottomBounds;
+
 	case CONSTRAINTS_LEVEL:	//Assuming elasticity is MAX
 		CheckLeftBounds = (obj->rigidBody.collider.shape.transform.position.x < obj->rigidBody.collider.shape.transform.size.x);
 		CheckRightBounds = (obj->rigidBody.collider.shape.transform.position.x > ((float)CP_System_GetWindowWidth()-obj->rigidBody.collider.shape.transform.size.x));
@@ -319,21 +327,27 @@ void UpdatePhysicsObjects(PhysicsObject* obj)
 		{
 			obj->rigidBody.collider.shape.transform.position.x = obj->rigidBody.collider.shape.transform.size.x;
 			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_RIGHT);
+			trauma += 0.25f;
+
 		}
 		if (CheckRightBounds)
 		{
 			obj->rigidBody.collider.shape.transform.position.x = (float)CP_System_GetWindowWidth() - obj->rigidBody.collider.shape.transform.size.x;
 			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_LEFT);
+			trauma += 0.25f;
+
 		}
 		if (CheckTopBounds)
 		{
 			obj->rigidBody.collider.shape.transform.position.y = obj->rigidBody.collider.shape.transform.size.y;
 			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_DOWN);
+			trauma += 0.25f;
 		}
 		if (CheckBottomBounds)
 		{
 			obj->rigidBody.collider.shape.transform.position.y = (float)CP_System_GetWindowHeight() - obj->rigidBody.collider.shape.transform.size.y;
 			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_UP);
+			trauma += 0.25f;
 		}
 		break;
 	case CONSTRAINTS_NONE:
@@ -354,8 +368,18 @@ void UpdatePhysicsObjects(PhysicsObject* obj)
 	
 	CP_Settings_Fill(obj->color);
 	DisplayShape(obj->rigidBody.collider.shape);
-	DrawTriangleAdvanced(GetPointInCircle(obj->rigidBody.collider.shape, 50), GetPointInCircle(obj->rigidBody.collider.shape, 130), GetPointInCircle(obj->rigidBody.collider.shape, 270), obj->rigidBody.collider.shape.transform.rotation);
 }
+
+float DistanceBetweenPhysicsObject(PhysicsObject ObjA, PhysicsObject ObjB)
+{
+	return CP_Vector_Distance(ObjA.rigidBody.collider.shape.transform.position, ObjB.rigidBody.collider.shape.transform.position);
+}
+
+_Bool IsCircleIntersecting(Shape shapeA, Shape shapeB)
+{
+	return ((shapeA.transform.size.x + shapeB.transform.size.x) > CP_Vector_Distance(shapeA.transform.position, shapeB.transform.position));
+}
+
 
 void AddForce(PhysicsObject obj, CP_Vector force, ForceMode forcemode)
 {
@@ -364,21 +388,39 @@ void AddForce(PhysicsObject obj, CP_Vector force, ForceMode forcemode)
 	case FORCEMODE_FORCE:
 		//velocity += force/mass;
 		PhysicsObjectArray[obj.id].rigidBody.force = CP_Vector_Add(PhysicsObjectArray[obj.id].rigidBody.force, force);
+		//obj.rigidBody.force = CP_Vector_Add(PhysicsObjectArray[obj.id].rigidBody.force, force);
 		break;
 	case FORCEMODE_IMPULSE:
 		PhysicsObjectArray[obj.id].rigidBody.force = CP_Vector_Add(PhysicsObjectArray[obj.id].rigidBody.force, CP_Vector_Scale(force, PhysicsObjectArray[obj.id].rigidBody.mass));
-	/*
-		if (CP_Vector_Length(PhysicsObjectArray[obj.id].rigidBody.velocity) >= CP_Vector_Length(force))
-		{
-			PhysicsObjectArray[obj.id].rigidBody.velocity = force;
-		}*/
 		break;
 	default:
 		break;
 	}
 }
 
+void CheckCollisionsBruteForce()	//NAIVE IMPLEMENTATION. DO SWEEP AND PRUNE NEXT TIME
+{
+	for (int i = 0; i < physicsObjectIndex - 1; i++)
+	{
+		PhysicsObject* objA = &PhysicsObjectArray[i];
+		for (int j = i + 1; j < physicsObjectIndex; j++)
+		{
+			PhysicsObject* objB = &PhysicsObjectArray[j];
 
+			if (IsCircleIntersecting(objA->rigidBody.collider.shape, objB->rigidBody.collider.shape))
+			{
+				CP_Vector normalA = CP_Vector_Normalize(CP_Vector_Subtract(objB->rigidBody.collider.shape.transform.position, objA->rigidBody.collider.shape.transform.position));
+				CP_Vector normalB = CP_Vector_Normalize(CP_Vector_Subtract(objA->rigidBody.collider.shape.transform.position, objB->rigidBody.collider.shape.transform.position));
+				float depth = ((objA->rigidBody.collider.shape.transform.size.x/2.f) + (objB->rigidBody.collider.shape.transform.size.x/2.f)) - DistanceBetweenPhysicsObject(*objA, *objB);
+				objA->rigidBody.velocity = CP_Vector_Add(objA->rigidBody.force, CP_Vector_Scale(normalA,depth/objA->rigidBody.mass));
+				objB->rigidBody.velocity = CP_Vector_Add(objB->rigidBody.force, CP_Vector_Scale(normalB,depth/ objB->rigidBody.mass));
+		
+
+			}
+
+		}
+	}
+}
 //##############################|| MATHS AND HELPER FUNCTIONS ||##########################################################
 
 //Gets the mouse input X and Y from CProcessing and puts them into a vector
@@ -420,7 +462,7 @@ CP_Vector PointInCircle(Shape shape, float angleInDeg)
 	//Thank you khan academy for this LMAOOOO
 	float angleInRadians = CP_Math_Radians(angleInDeg);
 	float x2 = (startV.x * cosf(angleInRadians)) - ((startV.y) * (sinf(angleInRadians)));
-	float y2 = (startV.x * sinf(angleInRadians))+((startV.y)*(cosf(angleInRadians)));
+	float y2 = (startV.x * sinf(angleInRadians)) + ((startV.y) * (cosf(angleInRadians)));
 	CP_Vector resultingVector = CP_Vector_Set((x2 * (shape.transform.size.x)+shape.transform.position.x), (y2 * (shape.transform.size.x)+shape.transform.position.y));
 	return resultingVector;
 }
@@ -526,5 +568,5 @@ void UpdateCameraShaker(void)
 //Example Shake Function. Just add trauma to shake the camera
 void Shake(void)
 {
-	trauma += 0.2f;
+	trauma += 0.3f;
 }
