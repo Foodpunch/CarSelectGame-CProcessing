@@ -124,11 +124,3 @@
 #define FULL_WHITE CP_Color_Create(255,255,255,255)
 //Full Black
 #define FULL_BLACK CP_Color_Create(0,0,0,255)
-
-
-
-
-
-
-
-
