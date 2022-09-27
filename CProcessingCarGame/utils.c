@@ -11,12 +11,15 @@
 //Feels like it should be an array of all GUI objects...
 Button ButtonArray[100];
 int buttonIndex = 0;		//index for the buttons. Used when creating and when updating
+//Need to have some empty state for the buttons so that I can "remove" them
+//Maybe an empty array, then inside a "remove buttons" function, I reset the index.
+
+
 
 PhysicsObject  PhysicsObjectArray[100];
 int physicsObjectIndex = 0;
 
 
-PhysicsObject* CollisionArray[100];
 //TODO: What happens when buttons are destroyed? Or like need to remove from memory. hmm...
 //Can I just save over? Or just --index..
 
@@ -298,15 +301,13 @@ void UpdatePhysicsObjects(PhysicsObject* obj)
 
 	//"FRICTION" supposed to be -1 * u * N * mass. TODO: friction co-efficient
 	CP_Vector friction = CP_Vector_Normalize(obj->rigidBody.velocity);
-	friction = CP_Vector_Scale(friction, -0.01f * obj->rigidBody.mass);
+	friction = CP_Vector_Scale(friction, -0.02f * obj->rigidBody.mass);
 	obj->rigidBody.velocity = CP_Vector_Add(obj->rigidBody.velocity, friction);
 
 	//Stops the obj if it's too slow
 	if (CP_Vector_Length(obj->rigidBody.velocity) <= 0.1f) obj->rigidBody.velocity = CP_Vector_Zero();
 
 	obj->rigidBody.collider.shape.transform.position = CP_Vector_Add(obj->rigidBody.collider.shape.transform.position, obj->rigidBody.velocity);
-	//obj->rigidBody.collider.shape.transform.position.x += obj->rigidBody.velocity.x;
-	//obj->rigidBody.collider.shape.transform.position.y += obj->rigidBody.velocity.y;
 	
 	//CheckCollisionsBruteForce();	
 
@@ -327,27 +328,26 @@ void UpdatePhysicsObjects(PhysicsObject* obj)
 		{
 			obj->rigidBody.collider.shape.transform.position.x = obj->rigidBody.collider.shape.transform.size.x;
 			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_RIGHT);
-			trauma += 0.25f;
-
+			trauma += (CP_Vector_Length(obj->rigidBody.velocity)*obj->rigidBody.mass)/100.f;
 		}
 		if (CheckRightBounds)
 		{
 			obj->rigidBody.collider.shape.transform.position.x = (float)CP_System_GetWindowWidth() - obj->rigidBody.collider.shape.transform.size.x;
 			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_LEFT);
-			trauma += 0.25f;
+			trauma += (CP_Vector_Length(obj->rigidBody.velocity) * obj->rigidBody.mass) / 100.f;
 
 		}
 		if (CheckTopBounds)
 		{
 			obj->rigidBody.collider.shape.transform.position.y = obj->rigidBody.collider.shape.transform.size.y;
 			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_DOWN);
-			trauma += 0.25f;
+			trauma += (CP_Vector_Length(obj->rigidBody.velocity) * obj->rigidBody.mass) / 100.f;
 		}
 		if (CheckBottomBounds)
 		{
 			obj->rigidBody.collider.shape.transform.position.y = (float)CP_System_GetWindowHeight() - obj->rigidBody.collider.shape.transform.size.y;
 			obj->rigidBody.velocity = Reflect(obj->rigidBody.velocity, VECTOR_UP);
-			trauma += 0.25f;
+			trauma += (CP_Vector_Length(obj->rigidBody.velocity) * obj->rigidBody.mass) / 100.f;
 		}
 		break;
 	case CONSTRAINTS_NONE:
@@ -412,10 +412,11 @@ void CheckCollisionsBruteForce()	//NAIVE IMPLEMENTATION. DO SWEEP AND PRUNE NEXT
 				CP_Vector normalA = CP_Vector_Normalize(CP_Vector_Subtract(objB->rigidBody.collider.shape.transform.position, objA->rigidBody.collider.shape.transform.position));
 				CP_Vector normalB = CP_Vector_Normalize(CP_Vector_Subtract(objA->rigidBody.collider.shape.transform.position, objB->rigidBody.collider.shape.transform.position));
 				float depth = ((objA->rigidBody.collider.shape.transform.size.x/2.f) + (objB->rigidBody.collider.shape.transform.size.x/2.f)) - DistanceBetweenPhysicsObject(*objA, *objB);
-				objA->rigidBody.velocity = CP_Vector_Add(objA->rigidBody.force, CP_Vector_Scale(normalA,depth/objA->rigidBody.mass));
-				objB->rigidBody.velocity = CP_Vector_Add(objB->rigidBody.force, CP_Vector_Scale(normalB,depth/ objB->rigidBody.mass));
 		
-
+				float massAvg = (objA->rigidBody.mass + objB->rigidBody.mass) / 2.f;
+				objA->rigidBody.velocity = CP_Vector_Add(objA->rigidBody.force, CP_Vector_Scale(normalA, depth / objA->rigidBody.mass));
+				objB->rigidBody.velocity = CP_Vector_Add(objB->rigidBody.force, CP_Vector_Scale(normalB, depth / objB->rigidBody.mass));
+				trauma += (massAvg/fAbs(depth));
 			}
 
 		}
@@ -517,6 +518,15 @@ float PerlinNoise(int x, int y)
 	return (float)(1.0 - ((n * ((n * n * 15731) + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);
 }
 
+
+float fMax(float a, float b)
+{
+	return (a >= b) ? a : b;
+}
+float fMin(float a, float b)
+{
+	return(a <= b) ? a : b;
+}
 
 //========================================= CAMERA SHAKER STUFF======================================================
 

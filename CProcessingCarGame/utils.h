@@ -166,6 +166,9 @@ CP_Vector Reflect(CP_Vector direction, CP_Vector normal);
 float PerlinNoise(int x, int y);	
 CP_Vector GetRandomVector(void);
 
+float fMax(float a, float b);
+float fMin(float a, float b);
+
 
 float DistanceBetweenPhysicsObject(PhysicsObject ObjA, PhysicsObject ObjB);
 
