@@ -20,6 +20,8 @@ PhysicsObject  PhysicsObjectArray[100];
 int physicsObjectIndex = 0;
 
 
+CollisionData CollisionObjectsArray[100];
+int collisionObjectIndex;
 //TODO: What happens when buttons are destroyed? Or like need to remove from memory. hmm...
 //Can I just save over? Or just --index..
 
@@ -280,6 +282,13 @@ void UpdatePhysics()
 		UpdatePhysicsObjects(&PhysicsObjectArray[i]);
 	}
 	CheckCollisionsBruteForce();
+	//if (collisionObjectIndex == 0) return;
+	//for (short i = 0; i < collisionObjectIndex; ++i)
+	//{
+	//	float dist = DistanceBetweenPhysicsObject(*CollisionObjectsArray[i].ObjA, *CollisionObjectsArray[i].ObjB);
+	//}
+	//memset(CollisionObjectsArray, 0, sizeof(CollisionData) * 100);
+	//collisionObjectIndex = 0;
 }
 
 
@@ -376,8 +385,10 @@ float DistanceBetweenPhysicsObject(PhysicsObject ObjA, PhysicsObject ObjB)
 }
 
 _Bool IsCircleIntersecting(Shape shapeA, Shape shapeB)
-{
-	return ((shapeA.transform.size.x + shapeB.transform.size.x) > CP_Vector_Distance(shapeA.transform.position, shapeB.transform.position));
+{	//remove the squareroot for efficiency
+	
+	return (CP_Math_Square(shapeA.transform.size.x + shapeB.transform.size.x)) > Vector_Distance_Squared(shapeA.transform.position, shapeB.transform.position);
+	//return ((shapeA.transform.size.x + shapeB.transform.size.x) > CP_Vector_Distance(shapeA.transform.position, shapeB.transform.position));
 }
 
 
@@ -409,18 +420,44 @@ void CheckCollisionsBruteForce()	//NAIVE IMPLEMENTATION. DO SWEEP AND PRUNE NEXT
 
 			if (IsCircleIntersecting(objA->rigidBody.collider.shape, objB->rigidBody.collider.shape))
 			{
+				//First we do static collisions
+
 				CP_Vector normalA = CP_Vector_Normalize(CP_Vector_Subtract(objB->rigidBody.collider.shape.transform.position, objA->rigidBody.collider.shape.transform.position));
 				CP_Vector normalB = CP_Vector_Normalize(CP_Vector_Subtract(objA->rigidBody.collider.shape.transform.position, objB->rigidBody.collider.shape.transform.position));
-				float depth = ((objA->rigidBody.collider.shape.transform.size.x/2.f) + (objB->rigidBody.collider.shape.transform.size.x/2.f)) - DistanceBetweenPhysicsObject(*objA, *objB);
-		
-				float massAvg = (objA->rigidBody.mass + objB->rigidBody.mass) / 2.f;
-				objA->rigidBody.velocity = CP_Vector_Add(objA->rigidBody.force, CP_Vector_Scale(normalA, depth / objA->rigidBody.mass));
-				objB->rigidBody.velocity = CP_Vector_Add(objB->rigidBody.force, CP_Vector_Scale(normalB, depth / objB->rigidBody.mass));
-				trauma += (massAvg/fAbs(depth));
+				float overlap = fAbs(0.5f * (DistanceBetweenPhysicsObject(*objA, *objB) - (objA->rigidBody.collider.shape.transform.size.x + objB->rigidBody.collider.shape.transform.size.x)));
+				objA->rigidBody.collider.shape.transform.position = CP_Vector_Add(objA->rigidBody.collider.shape.transform.position, CP_Vector_Scale(normalB, overlap));
+				objB->rigidBody.collider.shape.transform.position = CP_Vector_Add(objB->rigidBody.collider.shape.transform.position, CP_Vector_Scale(normalA, overlap));
+
+				//Add them to the collision array
+				//CreateCollisionData(objA, objB);
+				CP_Vector Tangent = CP_Vector_Set(-normalA.y, normalA.x);
+				float dotProductTangentA = CP_Vector_DotProduct(objA->rigidBody.velocity, Tangent);
+				float dotProductTangentB = CP_Vector_DotProduct(objB->rigidBody.velocity, Tangent);
+				//float dotProductB = CP_Vector_DotProduct(objB->rigidBody.velocity, Tangent);
+				float dotProductNormalA = CP_Vector_DotProduct(objA->rigidBody.velocity, normalA);
+				float dotProductNormalB = CP_Vector_DotProduct(objB->rigidBody.velocity, normalA);
+				//momentum calculations (see wikipedia : https://en.wikipedia.org/wiki/Elastic_collision)
+				float m1 = (dotProductNormalA * (objA->rigidBody.mass - objB->rigidBody.mass) + 2.0f * objB->rigidBody.mass * dotProductNormalB) / (objA->rigidBody.mass + objB->rigidBody.mass);
+				float m2 = (dotProductNormalB * (objB->rigidBody.mass - objA->rigidBody.mass) + 2.0f * objA->rigidBody.mass * dotProductNormalA) / (objA->rigidBody.mass + objB->rigidBody.mass);
+
+				objA->rigidBody.velocity = CP_Vector_Add(CP_Vector_Scale(Tangent, dotProductTangentA), CP_Vector_Scale(normalA, m1));
+				objB->rigidBody.velocity = CP_Vector_Add(CP_Vector_Scale(Tangent, dotProductTangentB), CP_Vector_Scale(normalA, m2));
+	
+				trauma += overlap*0.3f;
 			}
 
 		}
 	}
+}
+
+void CreateCollisionData(PhysicsObject* ObjA, PhysicsObject* ObjB)
+{
+	CollisionData newCollisionData;
+	newCollisionData.ObjA = ObjA;
+	newCollisionData.ObjB = ObjB;
+	newCollisionData.id = collisionObjectIndex;
+	CollisionObjectsArray[collisionObjectIndex] = newCollisionData;
+	collisionObjectIndex++;
 }
 //##############################|| MATHS AND HELPER FUNCTIONS ||##########################################################
 
@@ -449,7 +486,7 @@ float fAbs(float f)
 {
 	if (f < 0)
 	{
-		return (f *= -1);
+		return -f;
 	}
 	else return f;
 }

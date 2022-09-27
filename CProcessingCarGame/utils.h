@@ -72,7 +72,14 @@ typedef struct PhysicsObject
 
 extern PhysicsObject PhysicsObjectArray[100];
 
+typedef struct CollisionData
+{
+	PhysicsObject* ObjA;
+	PhysicsObject* ObjB;
+	int id;
+} CollisionData;
 
+extern CollisionData CollisionObjectsArray[100];
 
 typedef enum ForceMode				//Plucked from UNITY
 {
@@ -118,7 +125,7 @@ void AddForce(PhysicsObject rb, CP_Vector force, ForceMode forcemode);
 PhysicsObject CreatePhysicsObject(float x, float y, float diameter, CP_Color color, float speed, float mass,Constraints constraints);
 void UpdatePhysicsObjects(PhysicsObject* obj);
 PhysicsObject GetPhysicsObject(PhysicsObject* obj);
-
+void CreateCollisionData(PhysicsObject* ObjA, PhysicsObject* ObjB);
 
 _Bool IsCircleIntersecting(Shape shapeA, Shape shapeB);
 void CheckCollisionsBruteForce(void); //Next time do sweep and prune or something
